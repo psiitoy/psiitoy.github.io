@@ -1,0 +1,746 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="docker,elasticsearch,集群," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文记录使用docker搭建elasticsearch集群的整个过程(文中使用的2.1.2举例)，过程亲测同样适用于elasticsearch2.x,5.x，后续作者将继续深入研究es，下一步准备基于此集群对源生elasticsearch(以下简称es)做改造测试。">
+<meta name="keywords" content="docker,elasticsearch,集群">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[集群搭建]记录使用docker搭建elasticsearch集群">
+<meta property="og:url" content="https://psiitoy.github.io/2017/06/06/[集群搭建]记录使用docker搭建elasticsearch集群/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="本文记录使用docker搭建elasticsearch集群的整个过程(文中使用的2.1.2举例)，过程亲测同样适用于elasticsearch2.x,5.x，后续作者将继续深入研究es，下一步准备基于此集群对源生elasticsearch(以下简称es)做改造测试。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/esdocker/es-dockerfile.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/esdocker/es-head-cluster.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.135Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[集群搭建]记录使用docker搭建elasticsearch集群">
+<meta name="twitter:description" content="本文记录使用docker搭建elasticsearch集群的整个过程(文中使用的2.1.2举例)，过程亲测同样适用于elasticsearch2.x,5.x，后续作者将继续深入研究es，下一步准备基于此集群对源生elasticsearch(以下简称es)做改造测试。">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/esdocker/es-dockerfile.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/06/06/[集群搭建]记录使用docker搭建elasticsearch集群/"/>
+
+  <title> [集群搭建]记录使用docker搭建elasticsearch集群 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [集群搭建]记录使用docker搭建elasticsearch集群
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-06-06T20:15:06+08:00" content="2017-06-06">
+              2017-06-06
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/集群搭建/" itemprop="url" rel="index">
+                    <span itemprop="name">集群搭建</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/06/06/[集群搭建]记录使用docker搭建elasticsearch集群/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/06/06/[集群搭建]记录使用docker搭建elasticsearch集群/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文记录使用docker搭建elasticsearch集群的整个过程(文中使用的2.1.2举例)，过程亲测同样适用于elasticsearch2.x,5.x，后续作者将继续深入研究es，下一步准备基于此集群对源生elasticsearch(以下简称es)做改造测试。</p>
+<a id="more"></a>
+<hr>
+<h2 id="1、-环境介绍"><a href="#1、-环境介绍" class="headerlink" title="1、 环境介绍"></a>1、 环境介绍</h2><blockquote>
+<p>本文运行环境 <code>ubuntu16.04</code> + <code>docker17.05</code> + 官网上下载的<code>elasticsearch2.1.2</code>，另外docker环境为<code>openjdk:8-jre-alpine</code>。（使用alpine的原因就是没有太多不必要的组件和命令，docker内部也不需要太多组件）<br><strong><em><a href="https://www.elastic.co/downloads/past-releases" target="_blank" rel="noopener">es源码下载地址</a></em></strong></p>
+</blockquote>
+<h3 id="1-1-ubuntu"><a href="#1-1-ubuntu" class="headerlink" title="1.1 ubuntu"></a>1.1 ubuntu</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/version</span><br><span class="line">Linux version 4.4.0-46-generic (buildd@lcy01-10) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.2) ) <span class="comment">#67-Ubuntu SMP Thu Oct 20 15:05:12 UTC 2016</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-2-docker"><a href="#1-2-docker" class="headerlink" title="1.2 docker"></a>1.2 docker</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker -v</span><br><span class="line">Docker version 17.05.0-ce, build 89658be</span><br></pre></td></tr></table></figure>
+<h3 id="1-3-elasticsearch-版本忽略"><a href="#1-3-elasticsearch-版本忽略" class="headerlink" title="1.3 elasticsearch(版本忽略)"></a>1.3 elasticsearch(版本忽略)</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ./elasticsearch -version</span><br><span class="line">Version: 2.1.2, Build: c849dd1/2017-04-24T16:18:17Z, JVM: 1.8.0_101</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="2、-部署过程中遇到的问题"><a href="#2、-部署过程中遇到的问题" class="headerlink" title="2、 部署过程中遇到的问题"></a>2、 部署过程中遇到的问题</h2><h3 id="2-1-主要就是docker的网络配置，默认是桥接网络，不知为何多个node启动来之后无法互相发现。"><a href="#2-1-主要就是docker的网络配置，默认是桥接网络，不知为何多个node启动来之后无法互相发现。" class="headerlink" title="2.1 主要就是docker的网络配置，默认是桥接网络，不知为何多个node启动来之后无法互相发现。"></a>2.1 主要就是docker的网络配置，默认是桥接网络，不知为何多个node启动来之后无法互相发现。</h3><blockquote>
+<p>解决方案：修改<code>elasticsearch.yml</code>配置。</p>
+</blockquote>
+<h3 id="2-2-每次重启docker实例docker自动会重新分配ip。"><a href="#2-2-每次重启docker实例docker自动会重新分配ip。" class="headerlink" title="2.2 每次重启docker实例docker自动会重新分配ip。"></a>2.2 每次重启docker实例docker自动会重新分配ip。</h3><blockquote>
+<p>未解决。</p>
+</blockquote>
+<hr>
+<h2 id="3、-部署过程"><a href="#3、-部署过程" class="headerlink" title="3、 部署过程"></a>3、 部署过程</h2><h3 id="3-1-制作生成es的dockerfile"><a href="#3-1-制作生成es的dockerfile" class="headerlink" title="3.1 制作生成es的dockerfile."></a>3.1 制作生成es的<code>dockerfile</code>.</h3><blockquote>
+<p>参照<strong><em><a href="https://github.com/psiitoy/psiitoy.dockerfile.git" target="_blank" rel="noopener">dockerfile的git地址</a></em></strong>，如下图。</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/esdocker/es-dockerfile.png" alt="图 es-dockerfile"></p>
+<h3 id="3-2-在es源文件中为es安装head插件。"><a href="#3-2-在es源文件中为es安装head插件。" class="headerlink" title="3.2 在es源文件中为es安装head插件。"></a>3.2 在es源文件中为es安装<code>head</code>插件。</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ plugin install mobz/elasticsearch-head</span><br></pre></td></tr></table></figure>
+<h3 id="3-3-生成es的docker镜像"><a href="#3-3-生成es的docker镜像" class="headerlink" title="3.3 生成es的docker镜像"></a>3.3 生成es的docker镜像</h3><blockquote>
+<p>镜像名称为<code>psiitoy/elasticsearch:2.1.2</code>。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker build -t psiitoy/elasticsearch:2.1.2 .</span><br></pre></td></tr></table></figure>
+<h3 id="3-4-查看已有网桥信息。"><a href="#3-4-查看已有网桥信息。" class="headerlink" title="3.4 查看已有网桥信息。"></a>3.4 查看已有网桥信息。</h3><blockquote>
+<p>docker 默认使用<code>docker0</code>作为网桥</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ brctl show</span><br><span class="line">bridge name	bridge id		STP enabled	interfaces</span><br><span class="line">docker0		8000.0242552a7fb0	no		vetha061837</span><br></pre></td></tr></table></figure>
+<h3 id="3-5-查看网桥对应网段地址。"><a href="#3-5-查看网桥对应网段地址。" class="headerlink" title="3.5 查看网桥对应网段地址。"></a>3.5 查看网桥对应网段地址。</h3><blockquote>
+<p>发现网段为172.17.0.x</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ ip addr show docker0</span><br><span class="line">4: docker0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default </span><br><span class="line">    link/ether 02:42:55:2a:7f:b0 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 172.17.0.1/16 scope global docker0</span><br><span class="line">       valid_lft forever preferred_lft forever</span><br><span class="line">    inet6 fe80::42:55ff:fe2a:7fb0/64 scope link </span><br><span class="line">       valid_lft forever preferred_lft forever</span><br></pre></td></tr></table></figure>
+<h3 id="3-6-修改elasticsearch-yml配置。"><a href="#3-6-修改elasticsearch-yml配置。" class="headerlink" title="3.6 修改elasticsearch.yml配置。"></a>3.6 修改<code>elasticsearch.yml</code>配置。</h3><blockquote>
+<p>避免docker容器es服务之间无法互相发现导致的脑裂。<br>参照<strong><em><a href="http://blog.csdn.net/huwei2003/article/details/47004745" target="_blank" rel="noopener">Elasticsearch部分节点不能发现集群(脑裂)问题处理</a></em></strong></p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">network.host: 0.0.0.0</span><br><span class="line">discovery.zen.ping.multicast.enabled: <span class="literal">false</span></span><br><span class="line">discovery.zen.ping_timeout: 120s</span><br><span class="line">discovery.zen.minimum_master_nodes: 2 <span class="comment">#至少要发现集群可做master的节点数，</span></span><br><span class="line">client.transport.ping_timeout: 60s</span><br><span class="line">discovery.zen.ping.unicast.hosts: [<span class="string">"172.17.0.2"</span>, <span class="string">"172.17.0.3"</span>]</span><br></pre></td></tr></table></figure>
+<h3 id="3-7-创建docker容器x5。"><a href="#3-7-创建docker容器x5。" class="headerlink" title="3.7 创建docker容器x5。"></a>3.7 创建docker容器x5。</h3><blockquote>
+<p>docker run 参数介绍：<br>在使用 <code>-v</code> 参数时，代表把本地目录挂载到镜像里，我们可以在本机查看容器中的/usr/share/elasticsearch/logs目录。<br>在使用 <code>-d</code> 参数时，容器启动后会进入后台。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -d -v ~/usr/share/elasticsearch/logs:/usr/share/elasticsearch/logs psiitoy/elasticsearch:2.1.2</span><br><span class="line">66ca0270ef44</span><br><span class="line">$ docker run -d -v ~/usr/share/elasticsearch/logs:/usr/share/elasticsearch/logs psiitoy/elasticsearch:2.1.2</span><br><span class="line">ddfbb7ef65bc</span><br></pre></td></tr></table></figure>
+<h3 id="3-8-若想进入容器可以执行-docker-exec-it-CONTAINER-ID"><a href="#3-8-若想进入容器可以执行-docker-exec-it-CONTAINER-ID" class="headerlink" title="3.8 若想进入容器可以执行 docker exec -it $CONTAINER_ID"></a>3.8 若想进入容器可以执行 <code>docker exec -it $CONTAINER_ID</code></h3><blockquote>
+<p>在使用 <code>-i</code> 参数时，打开STDIN，用于控制台交互<br>在使用 <code>-t</code> 参数时，分配tty设备，该可以支持终端登录，默认为false</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker <span class="built_in">exec</span> -it 66ca0270ef44 /bin/bash</span><br><span class="line">bash-4.3<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-9-查看集群状态"><a href="#3-9-查看集群状态" class="headerlink" title="3.9 查看集群状态"></a>3.9 查看集群状态</h3><blockquote>
+<p><code>curl http://ip:port/_cat/health?v</code>，也可以用<code>health?pretty</code><br>我们看到集群有5个节点加入了，实验成功！</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ curl http://172.17.0.2:9200/_cat/health?v</span><br><span class="line">epoch      timestamp cluster       status node.total node.data shards pri relo init unassign pending_tasks max_task_wait_time active_shards_percent </span><br><span class="line">1497352537 11:15:37  elasticsearch green           5         5      0   0    0    0        0             0                  -                100.0%</span><br></pre></td></tr></table></figure>
+<h3 id="3-10-测试一下用客户端创建索引"><a href="#3-10-测试一下用客户端创建索引" class="headerlink" title="3.10 测试一下用客户端创建索引"></a>3.10 测试一下用客户端创建索引</h3><blockquote>
+<p>创建一个 <code>number_of_shards</code>为8,<code>number_of_replicas</code>为1 的名叫twitter的index。<br>参照<strong><em><a href="https://github.com/sprintDragon/experiment/tree/master/experiment-elasticsearch" target="_blank" rel="noopener">testClient的git地址</a></em></strong></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClientTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Client client = <span class="keyword">null</span>;<span class="comment">//client一定要是单例，单例，单例！不要在应用中构造多个客户端！</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            client = getClient(<span class="string">"elasticsearch"</span>, <span class="string">"172.17.0.3"</span>, <span class="number">9300</span>);<span class="comment">//client一定要是单例，单例，单例！不要在应用中构造多个客户端！</span></span><br><span class="line">            createIndex(<span class="string">"twitter"</span>, <span class="string">"tweet"</span>);</span><br><span class="line">            System.out.println(<span class="string">"#"</span> + client);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (client != <span class="keyword">null</span>) &#123;</span><br><span class="line">                client.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建es client 一定要是单例，单例，单例！不要在应用中构造多个客户端！</span></span><br><span class="line"><span class="comment">     * clusterName:集群名字</span></span><br><span class="line"><span class="comment">     * nodeIp:集群中节点的ip地址</span></span><br><span class="line"><span class="comment">     * nodePort:节点的端口</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> UnknownHostException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Client <span class="title">getClient</span><span class="params">(String clusterName, String nodeIp, <span class="keyword">int</span> nodePort)</span> <span class="keyword">throws</span> UnknownHostException </span>&#123;</span><br><span class="line">        <span class="comment">//设置集群的名字</span></span><br><span class="line">        Settings settings = Settings.settingsBuilder()</span><br><span class="line">                .put(<span class="string">"cluster.name"</span>, clusterName)</span><br><span class="line">                .put(<span class="string">"client.transport.sniff"</span>, <span class="keyword">false</span>)</span><br><span class="line"><span class="comment">//                .put("number_of_shards", 1)</span></span><br><span class="line"><span class="comment">//                .put("number_of_replicas", 0)</span></span><br><span class="line">                .build();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//创建集群client并添加集群节点地址</span></span><br><span class="line">        Client client = TransportClient.builder().settings(settings).build()</span><br><span class="line"><span class="comment">//                .addTransportAddress(new InetSocketTransportAddress("192.168.200.195", 9370))</span></span><br><span class="line"><span class="comment">//                .addTransportAddress(new InetSocketTransportAddress("192.168.200.196", 9370))</span></span><br><span class="line"><span class="comment">//                .addTransportAddress(new InetSocketTransportAddress("192.168.200.197", 9370))</span></span><br><span class="line"><span class="comment">//                .addTransportAddress(new InetSocketTransportAddress("192.168.200.198", 9370))</span></span><br><span class="line">                .addTransportAddress(</span><br><span class="line">                        <span class="keyword">new</span> InetSocketTransportAddress(InetAddress.getByName(nodeIp),</span><br><span class="line">                                nodePort));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> client;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 创建索引</span></span><br><span class="line"><span class="comment">     * 注意：在生产环节中通知es集群的owner去创建index</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> indexName</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> documentType</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">createIndex</span><span class="params">(String indexName, String documentType)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> IndicesExistsResponse iRes = client.admin().indices().prepareExists(indexName).execute().actionGet();</span><br><span class="line">        <span class="keyword">if</span> (iRes.isExists()) &#123;</span><br><span class="line">            client.admin().indices().prepareDelete(indexName).execute().actionGet();</span><br><span class="line">        &#125;</span><br><span class="line">        client.admin().indices().prepareCreate(indexName).setSettings(Settings.settingsBuilder().put(<span class="string">"number_of_shards"</span>, <span class="number">8</span>).put(<span class="string">"number_of_replicas"</span>, <span class="number">1</span>)).execute().actionGet();</span><br><span class="line">        XContentBuilder mapping = jsonBuilder()</span><br><span class="line">                .startObject()</span><br><span class="line">                .startObject(documentType)</span><br><span class="line"><span class="comment">//                     .startObject("_routing").field("path","tid").field("required", "true").endObject()</span></span><br><span class="line">                .startObject(<span class="string">"_source"</span>).field(<span class="string">"enabled"</span>, <span class="string">"true"</span>).endObject()</span><br><span class="line">                .startObject(<span class="string">"_all"</span>).field(<span class="string">"enabled"</span>, <span class="string">"false"</span>).endObject()</span><br><span class="line">                .startObject(<span class="string">"properties"</span>)</span><br><span class="line">                .startObject(<span class="string">"user"</span>)</span><br><span class="line">                .field(<span class="string">"store"</span>, <span class="keyword">true</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>, <span class="string">"string"</span>)</span><br><span class="line">                .field(<span class="string">"index"</span>, <span class="string">"not_analyzed"</span>)</span><br><span class="line">                .endObject()</span><br><span class="line">                .startObject(<span class="string">"message"</span>)</span><br><span class="line">                .field(<span class="string">"store"</span>, <span class="keyword">true</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>,<span class="string">"string"</span>)</span><br><span class="line">                .field(<span class="string">"index"</span>, <span class="string">"analyzed"</span>)</span><br><span class="line">                .field(<span class="string">"analyzer"</span>, <span class="string">"standard"</span>)</span><br><span class="line">                .endObject()</span><br><span class="line">                .startObject(<span class="string">"price"</span>)</span><br><span class="line">                .field(<span class="string">"store"</span>, <span class="keyword">true</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>, <span class="string">"float"</span>)</span><br><span class="line">                .endObject()</span><br><span class="line">                .startObject(<span class="string">"nv1"</span>)</span><br><span class="line">                .field(<span class="string">"store"</span>, <span class="keyword">true</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>, <span class="string">"integer"</span>)</span><br><span class="line">                .field(<span class="string">"index"</span>, <span class="string">"no"</span>)</span><br><span class="line">                .field(<span class="string">"null_value"</span>, <span class="number">0</span>)</span><br><span class="line">                .endObject()</span><br><span class="line">                .startObject(<span class="string">"nv2"</span>)</span><br><span class="line">                .field(<span class="string">"store"</span>, <span class="keyword">true</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>, <span class="string">"integer"</span>)</span><br><span class="line">                .field(<span class="string">"index"</span>, <span class="string">"not_analyzed"</span>)</span><br><span class="line">                .field(<span class="string">"null_value"</span>, <span class="number">10</span>)</span><br><span class="line">                .endObject()</span><br><span class="line">                .startObject(<span class="string">"tid"</span>)</span><br><span class="line">                .field(<span class="string">"store"</span>, <span class="keyword">true</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>, <span class="string">"string"</span>)</span><br><span class="line">                .field(<span class="string">"index"</span>, <span class="string">"not_analyzed"</span>)</span><br><span class="line">                .endObject()</span><br><span class="line"><span class="comment">//                               .startObject("location")</span></span><br><span class="line"><span class="comment">//                                    .field("store", true)</span></span><br><span class="line"><span class="comment">//                                  .field("type", "geo_point")</span></span><br><span class="line"><span class="comment">//                                  .field("lat_lon", true)</span></span><br><span class="line"><span class="comment">//                                  .field("geohash", true)</span></span><br><span class="line"><span class="comment">//                                  .field("geohash_prefix", true)</span></span><br><span class="line"><span class="comment">//                                  .field("geohash_precision", 7)</span></span><br><span class="line"><span class="comment">//                               .endObject()</span></span><br><span class="line"><span class="comment">//                               .startObject("shape")</span></span><br><span class="line"><span class="comment">//                                    .field("store", true)</span></span><br><span class="line"><span class="comment">//                                  .field("type", "geo_shape")</span></span><br><span class="line"><span class="comment">//                                  .field("geohash", true)</span></span><br><span class="line"><span class="comment">//                                  .field("geohash_prefix", false)</span></span><br><span class="line"><span class="comment">//                                  .field("geohash_precision", 7)</span></span><br><span class="line"><span class="comment">//                               .endObject()</span></span><br><span class="line">                .startObject(<span class="string">"endTime"</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>, <span class="string">"date"</span>)</span><br><span class="line">                .field(<span class="string">"store"</span>, <span class="keyword">true</span>)</span><br><span class="line">                .field(<span class="string">"index"</span>, <span class="string">"not_analyzed"</span>)</span><br><span class="line">                <span class="comment">//2015-08-21T08:35:13.890Z</span></span><br><span class="line">                .field(<span class="string">"format"</span>, <span class="string">"yyyy-MM-dd HH:mm:ss||yyyy-MM-dd'T'HH:mm:ss.SSSZ"</span>)</span><br><span class="line">                .endObject()</span><br><span class="line">                .startObject(<span class="string">"date"</span>)</span><br><span class="line">                .field(<span class="string">"type"</span>, <span class="string">"date"</span>)</span><br><span class="line"><span class="comment">//                                  .field("store", true)</span></span><br><span class="line"><span class="comment">//                                  .field("index", "not_analyzed")</span></span><br><span class="line">                <span class="comment">//2015-08-21T08:35:13.890Z</span></span><br><span class="line"><span class="comment">//                                  .field("format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd'T'HH:mm:ss.SSSZ")</span></span><br><span class="line">                .endObject()</span><br><span class="line">                .endObject()</span><br><span class="line">                .endObject()</span><br><span class="line">                .endObject();</span><br><span class="line">        client.admin().indices()</span><br><span class="line">                .preparePutMapping(indexName)</span><br><span class="line">                .setType(documentType)</span><br><span class="line">                .setSource(mapping)</span><br><span class="line">                .execute().actionGet();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3-11-查看head集群信息，成功了。"><a href="#3-11-查看head集群信息，成功了。" class="headerlink" title="3.11 查看head集群信息，成功了。"></a>3.11 查看head集群信息，成功了。</h3><p><img src="https://psiitoy.github.io/img/blog/esdocker/es-head-cluster.png" alt="图 es-head-cluster"></p>
+<h3 id="3-12-停止并删除所有docker容器"><a href="#3-12-停止并删除所有docker容器" class="headerlink" title="3.12 停止并删除所有docker容器"></a>3.12 停止并删除所有docker容器</h3><blockquote>
+<p>加<code>-f</code>参数强制停止删除</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ docker rm -f $(docker ps -aq)</span><br><span class="line">b1b17d0f41eb</span><br><span class="line">55d9259ff921</span><br><span class="line">ff4d42575213</span><br><span class="line">66ca0270ef44</span><br><span class="line">ddfbb7ef65bc</span><br></pre></td></tr></table></figure>
+<hr>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/docker/" rel="tag">#docker</a>
+          
+            <a href="/tags/elasticsearch/" rel="tag">#elasticsearch</a>
+          
+            <a href="/tags/集群/" rel="tag">#集群</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/22/[分享]浅谈分布式数据库/" rel="next" title="[分享]浅谈分布式数据库">
+                <i class="fa fa-chevron-left"></i> [分享]浅谈分布式数据库
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/18/[总结]数据结构之jcf(java集合框架)/" rel="prev" title="[总结]数据结构之jcf(java集合框架)">
+                [总结]数据结构之jcf(java集合框架) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、-环境介绍"><span class="nav-text">1、 环境介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-ubuntu"><span class="nav-text">1.1 ubuntu</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-docker"><span class="nav-text">1.2 docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-elasticsearch-版本忽略"><span class="nav-text">1.3 elasticsearch(版本忽略)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、-部署过程中遇到的问题"><span class="nav-text">2、 部署过程中遇到的问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-主要就是docker的网络配置，默认是桥接网络，不知为何多个node启动来之后无法互相发现。"><span class="nav-text">2.1 主要就是docker的网络配置，默认是桥接网络，不知为何多个node启动来之后无法互相发现。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-每次重启docker实例docker自动会重新分配ip。"><span class="nav-text">2.2 每次重启docker实例docker自动会重新分配ip。</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、-部署过程"><span class="nav-text">3、 部署过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-制作生成es的dockerfile"><span class="nav-text">3.1 制作生成es的dockerfile.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-在es源文件中为es安装head插件。"><span class="nav-text">3.2 在es源文件中为es安装head插件。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-生成es的docker镜像"><span class="nav-text">3.3 生成es的docker镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-查看已有网桥信息。"><span class="nav-text">3.4 查看已有网桥信息。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-查看网桥对应网段地址。"><span class="nav-text">3.5 查看网桥对应网段地址。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-修改elasticsearch-yml配置。"><span class="nav-text">3.6 修改elasticsearch.yml配置。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-创建docker容器x5。"><span class="nav-text">3.7 创建docker容器x5。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-8-若想进入容器可以执行-docker-exec-it-CONTAINER-ID"><span class="nav-text">3.8 若想进入容器可以执行 docker exec -it $CONTAINER_ID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-9-查看集群状态"><span class="nav-text">3.9 查看集群状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-测试一下用客户端创建索引"><span class="nav-text">3.10 测试一下用客户端创建索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-11-查看head集群信息，成功了。"><span class="nav-text">3.11 查看head集群信息，成功了。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-12-停止并删除所有docker容器"><span class="nav-text">3.12 停止并删除所有docker容器</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

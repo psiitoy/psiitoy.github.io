@@ -1,0 +1,735 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="hadoop," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Hadoop HDFS 数据读写流程分析">
+<meta name="keywords" content="hadoop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[源码]Hadoop HDFS 数据读写流程分析">
+<meta property="og:url" content="https://psiitoy.github.io/2018/02/01/[源码]Hadoop HDFS总结(4) 数据读写流程分析/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="Hadoop HDFS 数据读写流程分析">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-3.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-4.png">
+<meta property="og:updated_time" content="2018-02-07T02:22:30.761Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[源码]Hadoop HDFS 数据读写流程分析">
+<meta name="twitter:description" content="Hadoop HDFS 数据读写流程分析">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2018/02/01/[源码]Hadoop HDFS总结(4) 数据读写流程分析/"/>
+
+  <title> [源码]Hadoop HDFS 数据读写流程分析 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [源码]Hadoop HDFS 数据读写流程分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-02-01T11:00:00+08:00" content="2018-02-01">
+              2018-02-01
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2018/02/01/[源码]Hadoop HDFS总结(4) 数据读写流程分析/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2018/02/01/[源码]Hadoop HDFS总结(4) 数据读写流程分析/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Hadoop HDFS 数据读写流程分析</p>
+<a id="more"></a>
+<hr>
+<h2 id="HDFS的数据模型"><a href="#HDFS的数据模型" class="headerlink" title="HDFS的数据模型"></a>HDFS的数据模型</h2><p>在对读写流程进行分析之前，我们需要先对 HDFS 的数据模型有一个简单的了解。<br><img src="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-1.png" alt="图4-1"><br>如上图所示，在 NameNode 中有一个唯一的 FSDirectory 类负责维护文件系统的节点关系。文件系统中的每个路径会被抽象为一个 INode 对象。在 FSDirectory 中有一个叫做 rootDir 的 INodeDirectory 类，继承自 INode 类，它代表着整个文件系统的根节点。</p>
+<p>常用的 INode 节点有 INodeDirectory, INodeFile, INodeReference 三种。</p>
+<ul>
+<li><p>INodeDirectory 类代表着对目录对象的抽象，在类中有一个 List<inode> 对象 children 负责保存当前节点的子节点信息。</inode></p>
+</li>
+<li><p>INodeFile 类代表着对文件对象的抽象，对于一个大文件， HDFS 可能将其拆分为多个小文件进行存储，在这里的 blocks 对象是一个数据对象，代表着小文件的具体存放位置信息。</p>
+</li>
+<li><p>INodeReference 类可以理解成 Unix 系统中的硬链接。当文件系统中可能出现多个 path 地址对应同一个 INode 节点时，会构造出 INodeReference 对象。<br>例如我们对 /abc/foo 构造一个快照 s0, 则 然后将 /abc/foo mv 到另一个路径 /xyz/bar，此时 /xyz/bar 和 /abc/.snapshot/s0/foo 虽然是不同的路径，但是对应着同一个 block 地址。</p>
+</li>
+</ul>
+<h2 id="HDFS的IO操作"><a href="#HDFS的IO操作" class="headerlink" title="HDFS的IO操作"></a>HDFS的IO操作</h2><p>当通过客户端 hdfs dfs 命令进行文件 IO 操作时，会根据配置文件中 fs.defaultFS 的配置信息构造出一个 FileSystem 对象。具体的文件操作指令，通过 FileSystem 中对应的接口进行访问。</p>
+<p>对于客户端HDFS操作，他的默认 FileSystem 实现类是 DistributedFileSystem, 在 DistribtedFileSystem 中有一个 DFSClient 对象。这个对象使用前一篇文章中介绍的内部 RPC 通信机制，构造了一个 NameNode 的代理对象，负责同 NameNode 间进行 RPC 操作。</p>
+<h2 id="HDFS的文件写入流程"><a href="#HDFS的文件写入流程" class="headerlink" title="HDFS的文件写入流程"></a>HDFS的文件写入流程</h2><p><img src="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-2.png" alt="图4-2"></p>
+<p>以 hadoop fs -put 操作为例:</p>
+<ul>
+<li><p>当接收到 PUT 请求时，尝试在 NameNode 中 create 一个新的 INode 节点，这个节点是根据 create 中发送过去的 src 路径构建出的目标节点,如果发现节点已存在或是节点的 parent 存在且不为 INodeDirectory 则异常中断，否则则返回包含 INode 信息的 HdfsFileStatus 对象。</p>
+</li>
+<li><p>使用 HdfsFileStatus 构造一个实现了 OutputStream 接口的 DFSOutputStream 类，通过 nio 接口将需要传输的数据写入 DFSOutputStream。</p>
+</li>
+<li><p>在 DFSOutputStream 中写入的数据被以一定的 size（一般是 64 k）封装成一个 DFSPacket,压入 DataStreamer 的传输队列中。</p>
+</li>
+<li><p>DataStreamer 是 Client 中负责数据传输的独立线程，当发现队列中有 DFSPacket 时，先通过 namenode.addBlock 从 NameNode 中获取可供传输的 DataNode 信息，然后同指定的 DataNode 进行数据传输。</p>
+</li>
+<li><p>DataNode 中有一个专门的 DataXceiverServer 负责接收数据，当有数据到来时，就进行对应的 writeBlock 写入操作，同时如果发现还有下游的 DataNode 同样需要接收数据，就通过管道再次将发来的数据转发给下游 DataNode，实现数据的备份，避免通过 Client 一次进行数据发送。</p>
+</li>
+</ul>
+<p>整个操作步骤中的关键步骤有 NameNode::addBlock 以及 DataNode::writeBlock, 接下来会对这两步进行详细分析。</p>
+<h2 id="NameNode-addBlock解析"><a href="#NameNode-addBlock解析" class="headerlink" title="NameNode::addBlock解析"></a>NameNode::addBlock解析</h2><p>在上面的数据模型中我们看到，对于一个 INodeFile 节点，我们可能会根据其数据大小将其拆分成多个 Block，因此当传输新文件或者文件传输尺寸已经超过 blockSize 的时候，就需要通过 addBlock 获取新的传输地址。</p>
+<p>NameNode 中 addBlock 的实现路径在 FSNamesystem::getAdditionalBlock 中，这里先通过 FSDirWriteFileOp::validateAddBlock 判断是否是因为延迟或异常问题导致的无效请求，如果不是，则通过 FSDirWriteFileOp.chooseTargetForNewBlock 选取新 Block 的目标 DataNode，</p>
+<p>chooseTargetForNewBlock 的具体算法由 BlockPlacementPolicy 完成，默认情况下会优先选择 client 自身所在机器作为 target，如果自身机器不是 DataNode，则会优先选择和当前机器处于同一机架( rack )中的 DataNode，以提升数据传输效率。</p>
+<p>官方放置策略解释：</p>
+<ul>
+<li>The 1st replica is placed on the local machine, otherwise a random datanode. </li>
+<li>The 2nd replica is placed on a datanode that is on a different rack.</li>
+<li>The 3rd replica is placed on a datanode which is on a different node of the rack as the second replica.</li>
+</ul>
+<p>确定写入的 DataNode 后，通过 FSDirWriteFileOp::storeAllocatedBlock 构造 Block 对象，并放入 src 对应的 INodeFile 中。</p>
+<h2 id="DataNode-writeBlock-解析"><a href="#DataNode-writeBlock-解析" class="headerlink" title="DataNode::writeBlock 解析"></a>DataNode::writeBlock 解析</h2><p>DataNode 中的 DataXceiverServer 负责接收从 Client 发送来的数据传输请求。当有新的链接接通时，会构造一个 DataXceiver 线程进行数据接收。</p>
+<p>在 DataXceiver::writeBlock 中，如果发现 targets.length &gt; 0，则说明还有下游的 DataNode 需要接收数据传输，这时候会和 Client 一样构造出一个链接到下游 DataNode 的 socket 链接，通过 new Sender(mirrorOut).writeBlock 将数据写入下游。</p>
+<h2 id="HDFS的文件读取流程"><a href="#HDFS的文件读取流程" class="headerlink" title="HDFS的文件读取流程"></a>HDFS的文件读取流程</h2><p><img src="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-3.png" alt="图4-3"></p>
+<p>hadoop fs -get操作：</p>
+<p>GET 操作的流程，相对于 PUT 会比较简单，先通过参数中的来源路径从 NameNode 对应 INode 中获取对应的 Block 位置，然后基于返回的 LocatedBlocks 构造出一个 DFSInputStream 对象。在 DFSInputStream 的 read 方法中，根据 LocatedBlocks 找到拥有 Block 的 DataNode 地址，通过 readBlock 从 DataNode 获取字节流。</p>
+<p>hadoop fs -mv 操作：</p>
+<p>MV 操作只涉及对文件名称或路径的更改，因此他的主要步骤集中在 NameNode 端，Client 端只是通过 RPC 调用 NameNode::rename<br><img src="https://psiitoy.github.io/img/blog/hadoop/hadoop-4-4.png" alt="图4-4"></p>
+<p>从活动图中我们看到，整个 rename 的操作分了两步，第一步是 removeSrc4OldRename，将 src 从 FSDirectory 中移除，第二步是 addSourceToDestination ，将之前移除的 src 的 INode，重新根据 dst 的路径添加到 FSDirectory 中，完成整个重命名流程。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>HDFS 中的文件 IO 操作主要是发生在 Client 和 DataNode 中。</p>
+<p>NameNode 作为整个文件系统的 Namesystem 负责管理整个文件系统的路径树，当需要新建文件或读取文件时，会从文件树中读取对应的路径节点的 Block 信息，发送回 Client 端。 Client 通过从返回数据中得到的 DataNode 和 Block 信息，直接从 DataNode 中进行数据读取。</p>
+<p>整个数据 IO 流程中，NameNode 只负责管理节点和 DataNode 的对应关系，涉及到 IO 操作的行为少，从而将整个文件传输压力从 NameNode 转移到了 DataNode 中。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/hadoop/" rel="tag">#hadoop</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/31/[源码]Hadoop HDFS总结(3) RPC通信框架/" rel="next" title="[源码]Hadoop HDFS RPC通信框架">
+                <i class="fa fa-chevron-left"></i> [源码]Hadoop HDFS RPC通信框架
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/07/[源码]Hadoop HDFS总结(5) BlockManager解析/" rel="prev" title="[源码]Hadoop HDFS BlockManager解析">
+                [源码]Hadoop HDFS BlockManager解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS的数据模型"><span class="nav-text">HDFS的数据模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS的IO操作"><span class="nav-text">HDFS的IO操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS的文件写入流程"><span class="nav-text">HDFS的文件写入流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NameNode-addBlock解析"><span class="nav-text">NameNode::addBlock解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DataNode-writeBlock-解析"><span class="nav-text">DataNode::writeBlock 解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HDFS的文件读取流程"><span class="nav-text">HDFS的文件读取流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

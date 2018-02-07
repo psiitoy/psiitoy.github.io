@@ -1,0 +1,772 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="mysql,mongo," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="索引总结">
+<meta name="keywords" content="mysql,mongo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[对比]mongo-mysql性能对比">
+<meta property="og:url" content="https://psiitoy.github.io/2016/07/25/[对比]mongo-mysql性能对比/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="索引总结">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/mongo/mongo-vs-mysql-1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/mongo/mongo-vs-mysql-2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/mongo/mongo-vs-mysql-3.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/mongo/mongo-vs-mysql-4.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/mongo/mongo-vs-mysql-5.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/mongo/mongo-vs-mysql-6.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.096Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[对比]mongo-mysql性能对比">
+<meta name="twitter:description" content="索引总结">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/mongo/mongo-vs-mysql-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2016/07/25/[对比]mongo-mysql性能对比/"/>
+
+  <title> [对比]mongo-mysql性能对比 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [对比]mongo-mysql性能对比
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-25T21:15:06+08:00" content="2016-07-25">
+              2016-07-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/对比/" itemprop="url" rel="index">
+                    <span itemprop="name">对比</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2016/07/25/[对比]mongo-mysql性能对比/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/07/25/[对比]mongo-mysql性能对比/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>索引总结</p>
+<a id="more"></a>
+<p>mongo</p>
+<ol>
+<li>相比较MySQL，MongoDB以一种直观文档的方式来完成数据的存储。它很像JavaScript中定义的JSON格式，不过数据在存储的时候MongoDB数据库为文档增加了序列化的操作，最终存进磁盘的其实是一种叫做<font color="red">BSON</font>的格式，即<font color="red">Binary-JSON</font>。</li>
+<li>如果是因为业务需求或者是项目初始阶段，而导致数据的具体格式无法明确定义的话，MongoDB的这一鲜明特性就脱颖而出了。相比传统的关系型数据库，它非常容易被扩展</li>
+<li>MongoDB对数据之间事务关系支持比较弱</li>
+<li>自带了一个名叫GirdFS的分布式文件系统,5. 内部还自建了对map-reduce运算框架的支持，虽然这种支持从功能上看还算是比较简单的，相当于MySQL里GroupBy功能的扩展版，不过也为数据的统计带来了方便。</li>
+<li>内部还自建了对map-reduce运算框架的支持，虽然这种支持从功能上看还算是比较简单的，相当于MySQL里GroupBy功能的扩展版，不过也为数据的统计带来了方便。</li>
+<li>MongoDB在启动后会将数据库中的数据以文件映射的方式加载到内存中。如果内存资源相当丰富的话，这将极大地提高数据库的查询速度，毕竟内存的I/O效率比磁盘高多了。</li>
+</ol>
+<p>问题</p>
+<ol>
+<li>比起MySQL，MongoDB没有成熟的运维经验，需要不断地探索</li>
+<li>MongoDB中的数据存放具有相当的随意性，不具有MySQL在开始就定义好了。对运维人员来说，他们可能不清楚数据库内部数据的数据格式，这也会数据库的运维带来了麻烦。</li>
+</ol>
+<p>#2.1 平均每条数据的插入时间<br><img src="/img/blog/mongo/mongo-vs-mysql-1.png" alt="图1-1"></p>
+<blockquote>
+<p>图上数据横坐标是平均每插入1000条数据所需要的时间，单位是秒。记住，是每1000条数据，不是每条数据哦。</p>
+</blockquote>
+<p>总结：</p>
+<ol>
+<li>数据库的平均插入速率：MongoDB不指定_id插入 &gt; MySQL不指定主键插入 &gt; MySQL指定主键插入 &gt; MongoDB指定_id插入。</li>
+<li>MongoDB在指定_id与不指定_id插入时速度相差很大，而MySQL的差别却小很多。</li>
+</ol>
+<p>分析：</p>
+<ol>
+<li>在指定_id或主键时，两种数据库在插入时要对索引值进行处理，并查找数据库中是否存在相同的键值，这会减慢插入的速率。</li>
+<li>在MongoDB中，指定索引插入比不指定慢很多，这是因为，MongoDB里每一条数据的_id值都是唯一的。当在不指定_id插入数据的时候，其_id是系统自动计算生成的。MongoDB通过计算机特征值、时间、进程ID与随机数来确保生成的_id是唯一的。而在指定_id插入时，MongoDB每插一条数据，都需要检查此_id可不可用，当数据库中数据条数太多的时候，这一步的查询开销会拖慢整个数据库的插入速度。</li>
+<li>MongoDB会充分使用系统内存作为缓存，这是一种非常优秀的特性。我们的测试机的内存有64G，在插入时，MongoDB会尽可能地在内存快写不进去数据之后，再将数据持久化保存到硬盘上。这也是在不指定_id插入的时候，MongoDB的效率遥遥领先的原因。但在指定_id插入时，当数据量一大内存装不下时，MongoDB就需要将磁盘中的信息读取到内存中来查重，这样一来其插入效率反而慢了。</li>
+<li>MySQL不愧是一种非常稳定的数据库，无论在指定主键还是在不指定主键插入的情况下，其效率都差不了太多。</li>
+</ol>
+<p>#2.2 插入稳定性分析</p>
+<blockquote>
+<p>插入稳定性是指，随着数据量的增大，每插入一定量数据时的插入速率情况。  在本次测试中，我们把这个指标的规模定在10w，即显示的数据是在每插入10w条数据时，在这段时间内每秒钟能插入多少条数据。 先呈现四张图上来：</p>
+</blockquote>
+<ol>
+<li>MongoDB指定_id插入：<br><img src="/img/blog/mongo/mongo-vs-mysql-2.png" alt="图1-2"></li>
+<li>MongoDB不指定_id插入：<br><img src="/img/blog/mongo/mongo-vs-mysql-3.png" alt="图1-3"></li>
+<li>MySQL指定PRIMARY KEY插入：<br><img src="/img/blog/mongo/mongo-vs-mysql-4.png" alt="图1-4"></li>
+<li>MySQL不指定PRIMARY KEY插入：<br><img src="/img/blog/mongo/mongo-vs-mysql-5.png" alt="图1-5"></li>
+</ol>
+<p>总结：</p>
+<ol>
+<li>整体上的插入速度还是和上一回的统计数据类似：MongoDB不指定_id插入 &gt; MySQL不指定主键插入 &gt; MySQL指定主键插入 &gt; MongoDB指定_id插入。</li>
+<li>从图中可以看出，在指定主键插入数据的时候，MySQL与MongoDB在不同数据数量级时，每秒插入的数据每隔一段时间就会有一个波动，在图表中显示成为规律的毛刺现象。而在不指定插入数据时，在大多数情况下插入速率都比较平均，但随着数据库中数据的增多，插入的效率在某一时段有瞬间下降，随即又会变稳定。</li>
+<li>整体上来看，MongoDB的速率波动比MySQL的严重，方差变化较大。</li>
+<li>MongoDB在指定_id插入时，当插入的数据变多之后，插入效率有明显地下降。在其他三种的插入测试中，从开始到结束，其插入的速率在大多数的时候都固定在一个标准上。</li>
+</ol>
+<p>分析：</p>
+<ol>
+<li>毛刺现象是因为，当插入的数据太多的时候，MongoDB需要将内存中的数据写进硬盘，MySQL需要重新分表。这些操作每当数据库中的数据达到一定量级后就会自动进行，因此每隔一段时间就会有一个明显的毛刺。</li>
+<li>MongoDB毕竟还是新生事物，其稳定性没有已应用多年的MySQL优秀。</li>
+<li>MongoDB在指定_id插入的时候，其性能的下降还是很厉害的。</li>
+</ol>
+<p>#2.3 MySQL与MongoDB读取性能的简单测试<br>以图的横坐标是每查询1000条数据所需要的时间，单位为s；纵坐标是查询的规模，分为1w, 5w,10w, 20w, 50w五个等级。<br><img src="/img/blog/mongo/mongo-vs-mysql-6.png" alt="图1-6"></p>
+<p>总结：</p>
+<ol>
+<li>在读取的数据规模不大时，MongoDB的查询速度真是一骑绝尘，甩开MySQL好远好远。</li>
+<li>在查询的数据量逐渐增多的时候，MySQL的查询速度是稳步下降的，而MongoDB的查询速度却有些起伏。</li>
+</ol>
+<p>分析：</p>
+<ol>
+<li>如果MySQL没有经过查询优化的话，其查询速度就不要跟MongoDB比了。MongoDB可以充分利用系统的内存资源，我们的测试机器内存是64GB的，内存越大MongoDB的查询速度就越快，毕竟磁盘与内存的I/O效率不是一个量级的。</li>
+<li>本次实验的查询的数据也是随机生成的，因此所有待查询的数据都存在MongoDB的内存缓存中的概率是很小的。在查询时，MongoDB需要多次将内存中的数据与磁盘进行交互以便查找，因此其查询速率取决于其交互的次数。这样就存在这样一种可能性，尽管待查询的数据数目较多，但这段随机生成的数据被MongoDB以较少的次数从磁盘中取出。因此，其查询的平均速度反而更快一些。这样看来，MongoDB的查询速度波动也处在一个合理的范围内。</li>
+<li>MySQL的稳定性还是毋庸置疑的。</li>
+</ol>
+<p>#2.4 测试结论</p>
+<ol>
+<li>相比较MySQL，MongoDB数据库更适合那些读作业较重的任务模型。MongoDB能充分利用机器的内存资源。如果机器的内存资源丰富的话，MongoDB的查询效率会快很多。</li>
+<li>在带”_id”插入数据的时候，MongoDB的插入效率其实并不高。如果想充分利用MongoDB性能的话，推荐采取不带”_id”的插入方式，然后对相关字段作索引来查询。</li>
+</ol>
+<p>MongoDB的优势</p>
+<ol>
+<li>MongoDB适合那些对数据库具体数据格式不明确或者数据库数据格式经常变化的需求模型，而且对开发者十分友好。</li>
+<li>MongoDB官方就自带一个分布式文件系统，可以很方便地部署到服务器机群上。MongoDB里有一个Shard的概念，就是方便为了服务器分片使用的。每增加一台Shard，MongoDB的插入性能也会以接近倍数的方式增长，磁盘容量也很可以很方便地扩充。</li>
+<li>MongoDB还自带了对map-reduce运算框架的支持，这也很方便进行数据的统计。</li>
+</ol>
+<p>MongoDB的缺陷</p>
+<ol>
+<li>事务关系支持薄弱。这也是所有NoSQL数据库共同的缺陷，不过NoSQL并不是为了事务关系而设计的，具体应用还是很需求。</li>
+<li>稳定性有些欠缺，这点从上面的测试便可以看出。</li>
+<li>MongoDB一方面在方便开发者的同时，另一方面对运维人员却提出了相当多的要求。业界并没有成熟的MongoDB运维经验，MongoDB中数据的存放格式也很随意，等等问题都对运维人员的考验。</li>
+</ol>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql/" rel="tag">#mysql</a>
+          
+            <a href="/tags/mongo/" rel="tag">#mongo</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/25/[理论]Java相关名词/" rel="next" title="[理论]Java相关名词">
+                <i class="fa fa-chevron-left"></i> [理论]Java相关名词
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/25/[读书笔记]Elasticsearch权威指南/" rel="prev" title="[读书笔记]Elasticsearch权威指南">
+                [读书笔记]Elasticsearch权威指南 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <p class="post-toc-empty">此文章未包含目录</p>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,872 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="mysql,mongo,数据迁移," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="mongo迁移mysql总结">
+<meta name="keywords" content="mysql,mongo,数据迁移">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[总结]mongo迁移mysql总结">
+<meta property="og:url" content="https://psiitoy.github.io/2016/07/25/[总结]mongo迁移mysql总结/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="mongo迁移mysql总结">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/cobar.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/cobar-app.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/tddl-1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/tddl-2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/mycat-1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/mycat-2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/jproxy-1.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.113Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[总结]mongo迁移mysql总结">
+<meta name="twitter:description" content="mongo迁移mysql总结">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/dbproxy/cobar.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2016/07/25/[总结]mongo迁移mysql总结/"/>
+
+  <title> [总结]mongo迁移mysql总结 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [总结]mongo迁移mysql总结
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-25T21:15:06+08:00" content="2016-07-25">
+              2016-07-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/总结/" itemprop="url" rel="index">
+                    <span itemprop="name">总结</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2016/07/25/[总结]mongo迁移mysql总结/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/07/25/[总结]mongo迁移mysql总结/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>mongo迁移mysql总结</p>
+<a id="more"></a>
+<p>##1.分片解决的问题</p>
+<p>##2.是否真的需要分片</p>
+<blockquote>
+<p>在超大规模数据库需求的情况下，分片是唯一的途径。不只是对于MySQL，对大部分同类技术都是一样。</p>
+</blockquote>
+<p>##3.分片的替代方案</p>
+<ul>
+<li><p>功能分区</p>
+<blockquote>
+<p>（概念同垂直切分）</p>
+</blockquote>
+</li>
+<li><p>复制</p>
+<blockquote>
+<p>许多应用都是”读压力大”，而扩展读操作性要比扩展写要容易。这种情况，复制是很好的选择。<br>MYSQL自带的主从复制功能非常健壮，虽然其异步特性增加了应用的复杂性。这种情况下，开发人员必须根据客户对一致性的要求判断从哪台服务器读，不能从那读。</p>
+</blockquote>
+</li>
+<li><p>缓存和队列</p>
+<blockquote>
+<p>缓存抗读。许多系统应用缓存可以降低数据库读负载高达80-95%。(Redis,Memcached)<br>与之相对的是队列，他是优化写的。通过合并多次写操作，提高了对数据库操作的效率。(//todo Hbase mongo es)(AMQ,RabbitMQ)<br>大部分大型应用都应该重点考虑这两种技术。</p>
+</blockquote>
+</li>
+<li><p>外部支持技术</p>
+<blockquote>
+<p>高性能全文检索，考虑用ES,Solr。如果想做大规模数据分析，考虑应用Hadoop。</p>
+</blockquote>
+</li>
+</ul>
+<p>##4.分片之前的优化</p>
+<ul>
+<li><p>硬件</p>
+<blockquote>
+<p>如果你使用的数据库比较大，确保有大量内存和高性能闪存，许多情况下，它可以极大的提升系统。</p>
+</blockquote>
+</li>
+<li><p>Mysql版本和配置</p>
+<blockquote>
+<p>最新的Mysql GA版本。它通常能提供额外的性能提升,能充分利用最新的硬件性能。<br>然后是合适的Mysql配置，配置是否最优可能导致甚至十倍的性能差距。</p>
+</blockquote>
+</li>
+<li><p>查询、索引优化</p>
+</li>
+</ul>
+<p>##5.考虑分片</p>
+<ul>
+<li>如果以上都不能让你获得满意的性能，那么我们考虑分片。</li>
+<li>分片确实有使用低成本硬件或者更廉价的云实例获得潜在性能的优势。</li>
+<li>分片之后同样可以使用主从复制来获得更高的可用性</li>
+</ul>
+<p>###5.1 分片策略</p>
+<ul>
+<li><p>分片层次：分片并不是必须在DB层面做的。许多应用（尤其是SAAS）经常在更高层次上做分片，<br>可以部署多套副本完全独立，每份副本有各自的分片Mysql环境。</p>
+</li>
+<li><p>分片关键点：<br>1）要让尽可能多的数据访问点安排在一起，因为跨分片访问代价很昂贵（而且前提是支持的情况下）<br>2）分片之后的单片的读能力，数据承载能力是否能满足要求。<br>3）未来是否支持扩展(如分裂)</p>
+</li>
+<li><p>分片的粒度：<br>按实例或者库分片,对库进行分片较灵活不必部署过多实例，且用库做分片比较容易做高可用集群，如A片主B片从部署到一台<br>服务器1，C从和A主到另一台2，B主C从到3,这样。</p>
+</li>
+<li><p>分片技术：</p>
+</li>
+</ul>
+<h4 id="1-Mycat"><a href="#1-Mycat" class="headerlink" title="1) Mycat"></a>1) Mycat</h4><blockquote>
+<p>1）起因Cobar存在的一些比较严重的问题，及其使用限制。是基于开源cobar演变而来，我们对cobar的代码进行了彻底的重构。</p>
+<p>2）使用NIO重构了网络模块，并且优化了Buffer内核，增强了聚合，Join等基本特性，同时兼容绝大多数数据库成为通用的数据库中间件。</p>
+<p>3）1.4 版本以后 完全的脱离基本cobar内核，结合Mycat集群管理、自动扩容、智能优化，成为高性能的中间件。</p>
+<p>Mycat本身是一个数据库中间件，实现了数据库代理、数据库引擎功能；<br>前端模拟MySQL协议与客户端交互，经过SQL解析器与后端通过MySQL协议、JDBC与各种关系型数据库交互；<br>与其他中间见不同的是，MyCAT后端兼容多个类型的数据库，且能实现跨库条件下大部分数据库函数。</p>
+</blockquote>
+<h4 id="2-cobar"><a href="#2-cobar" class="headerlink" title="2) cobar"></a>2) cobar</h4><blockquote>
+<p>1)随着业务的进行数据库的数据量和访问量的剧增，需要对数据进行水平拆分来降低单库的压力，而且需要高效且相对透明的来屏蔽掉水平拆分的细节。</p>
+<p>2)为提高访问的可用性，数据源需要备份。</p>
+<p>3)数据源可用性的检测和failover。</p>
+<p>4)前台的高并发造成后台数据库连接数过多，降低了性能，怎么解决。</p>
+</blockquote>
+<ul>
+<li>针对以上问题就有了cobar施展自己的空间了，cobar中间件以proxy的形式位于前台应用和实际数据库之间，对前台的开放的接口是mysql通信协议。将前台SQL语句变更并按照数据分布规则转发到合适的后台数据分库，再合并返回结果，模拟单库下的数据库行为。</li>
+</ul>
+<p><img src="/img/blog/dbproxy/cobar.png" alt="图cobar架构"></p>
+<p>Cobar应用架构举例：<br><img src="/img/blog/dbproxy/cobar-app.png" alt="图cobar-app架构"></p>
+<h5 id="应用介绍："><a href="#应用介绍：" class="headerlink" title="应用介绍："></a>应用介绍：</h5><ul>
+<li>1.通过Cobar提供一个名为test的数据库，其中包含t1,t2两张表。后台有3个MySQL实例(ip:port)为其提供服务，分别为：A,B,C。</li>
+<li>2.期望t1表的数据放置在实例A中，t2表的数据水平拆成四份并在实例B和C中各自放两份。t2表的数据要具备HA功能，即B或者C实例其中一个出现故障，不影响使用且可提供完整的数据服务。</li>
+</ul>
+<h5 id="cobar优点总结："><a href="#cobar优点总结：" class="headerlink" title="cobar优点总结："></a>cobar优点总结：</h5><ul>
+<li>1.数据和访问从集中式改变为分布：</li>
+<li>（1）Cobar支持将一张表水平拆分成多份分别放入不同的库来实现表的水平拆分</li>
+<li>（2）Cobar也支持将不同的表放入不同的库</li>
+<li><p>（3） 多数情况下，用户会将以上两种方式混合使用</p>
+<blockquote>
+<p>注意！：Cobar不支持将一张表，例如test表拆分成test_1,test_2, test_3…..放在同一个库中，必须将拆分后的表分别放入不同的库来实现分布式。</p>
+</blockquote>
+</li>
+<li><p>2.解决连接数过大的问题。</p>
+</li>
+<li>3.对业务代码侵入性少。</li>
+<li>4.提供数据节点的failover,HA：</li>
+<li>(1)Cobar的主备切换有两种触发方式，一种是用户手动触发，一种是Cobar的心跳语句检测到异常后自动触发。那么，当心跳检测到主机异常，切换到备机，如果主机恢复了，需要用户手动切回主机工作，Cobar不会在主机恢复时自动切换回主机，除非备机的心跳也返回异常。</li>
+<li>(2)Cobar只检查MySQL主备异常，不关心主备之间的数据同步，因此用户需要在使用Cobar之前在MySQL主备上配置双向同步。</li>
+</ul>
+<h5 id="cobar缺点："><a href="#cobar缺点：" class="headerlink" title="cobar缺点："></a>cobar缺点：</h5><ul>
+<li>开源版本中数据库只支持mysql，并且不支持读写分离。<blockquote>
+<p>source：<a href="http://code.alibabatech.com/wiki/display/cobar/Home" target="_blank" rel="noopener">http://code.alibabatech.com/wiki/display/cobar/Home</a></p>
+</blockquote>
+</li>
+</ul>
+<h4 id="TDDL"><a href="#TDDL" class="headerlink" title="TDDL"></a>TDDL</h4><ul>
+<li>淘宝根据自己的业务特点开发了TDDL（Taobao Distributed Data Layer 外号:头都大了 ©_Ob）框架，主要解决了分库分表对应用的透明化以及异构数据库之间的数据复制，它是一个基于集中式配置的 jdbc datasource实现，具有主备，读写分离，动态数据库配置等功能。<br>TDDL所处的位置（tddl通用数据访问层，部署在客户端的jar包，用于将用户的SQL路由到指定的数据库中）</li>
+</ul>
+<p><img src="/img/blog/dbproxy/tddl-1.png" alt="图tddl所在层"><br><img src="/img/blog/dbproxy/tddl-2.png" alt="图tddl代理策略">  </p>
+<h5 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h5><p>1.数据库主备和动态切换<br>2.带权重的读写分离<br>3.单线程读重试<br>4.集中式数据源信息管理和动态变更<br>5.剥离的稳定jboss数据源<br>6.支持mysql和oracle数据库<br>7.基于jdbc规范，很容易扩展支持实现jdbc规范的数据源<br>8.无server,client-jar形式存在，应用直连数据库<br>9.读写次数,并发度流程控制，动态变更<br>10.可分析的日志打印,日志流控，动态变更</p>
+<h5 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h5><p>TDDL必须要依赖diamond配置中心（diamond是淘宝内部使用的一个管理持久配置的系统，目前淘宝内部绝大多数系统的配置，由diamond来进行统一管理，同时diamond也已开源）。<br>TDDL复杂度相对较高。当前公布的文档较少，只开源动态数据源，分表分库部分还未开源，还需要依赖diamond，不推荐使用。<br>终其所有，我们研究中间件的目的是使数据库实现性能的提高。具体使用哪种还要经过深入的研究，严谨的测试才可决定。</p>
+<blockquote>
+<p>TDDL动态数据源使用示例说明：<a href="http://rdc.taobao.com/team/jm/archives/1645" target="_blank" rel="noopener">http://rdc.taobao.com/team/jm/archives/1645</a><br>  diamond简介和快速使用：<a href="http://jm.taobao.org/tag/diamond%E4%B8%93%E9%A2%98/" target="_blank" rel="noopener">http://jm.taobao.org/tag/diamond%E4%B8%93%E9%A2%98/</a><br>  TDDL源码：<a href="https://github.com/alibaba/tb_tddl" target="_blank" rel="noopener">https://github.com/alibaba/tb_tddl</a> </p>
+</blockquote>
+<h4 id="MyCat"><a href="#MyCat" class="headerlink" title="MyCat"></a>MyCat</h4><p><img src="/img/blog/dbproxy/mycat-1.png" alt="图mycat1"><br><img src="/img/blog/dbproxy/mycat-2.png" alt="图mycat2"></p>
+<p>什么是MyCAT?简单的说，MyCAT就是： 一个彻底开源的，面向企业应用开发的“大数据库集群” 支持事务、ACID、可以替代Mysql的加强版数据库 ? 一个可以视为“Mysql”集群的企业级数据库，用来替代昂贵的Oracle集群 ? 一个融合内存缓存技术、Nosql技术、HDFS大数据的新型SQL Server ? 结合传统数据库和新型分布式数据仓库的新一代企业级数据库产品 ? 一个新颖的数据库中间件产品。</p>
+<p>目标</p>
+<p>低成本的将现有的单机数据库和应用平滑迁移到“云”端，解决数据存储和业务规模迅速增长情况下的数据瓶颈问题。</p>
+<p>关键特性</p>
+<ol>
+<li><p>支持 SQL 92标准 支持Mysql集群，可以作为Proxy使用 支持JDBC连接ORACLE、DB2、SQL Server，将其模拟为MySQL Server使用 支持galera for mysql集群，percona-cluster或者mariadb cluster，提供高可用性数据分片集群，自动故障切换，高可用性 。</p>
+</li>
+<li><p>支持读写分离。</p>
+</li>
+<li><p>支持Mysql双主多从，以及一主多从的模式 。</p>
+</li>
+<li><p>支持全局表。</p>
+</li>
+<li><p>支持数据自动分片到多个节点，用于高效表关联查询 。</p>
+</li>
+<li><p>垮裤join，支持独有的基于E-R 关系的分片策略，实现了高效的表关联查询多平台支持，部署和实施简单。</p>
+</li>
+</ol>
+<p>优势</p>
+<p>基于阿里开源的Cobar产品而研发，Cobar的稳定性、可靠性、优秀的架构和性能，以及众多成熟的使用案例使得MyCAT一开始就拥有一个很好的起点，站在巨人的肩膀上，我们能看到更远。广泛吸取业界优秀的开源项目和创新思路，将其融入到MyCAT的基因中，使得MyCAT在很多方面都领先于目前其他一些同类的开源项目，甚至超越某些商业产品。MyCAT背后有一只强大的技术团队，其参与者都是5年以上资深软件工程师、架构师、DBA等，优秀的技术团队保证了MyCAT的产品质量。 MyCAT并不依托于任何一个商业公司，因此不像某些开源项目，将一些重要的特性封闭在其商业产品中，使得开源项目成了一个摆设，目前在持续维护更新。</p>
+<p>长期规划</p>
+<p>在支持Mysql的基础上，后端增加更多的开源数据库和商业数据库的支持，包括原生支持PosteSQL、FireBird等开源数据库，以及通过JDBC等方式间接支持其他非开源的数据库如Oracle、DB2、SQL Server等实现更为智能的自我调节特性，如自动统计分析SQL，自动创建和调整索引，根据数据表的读写频率，自动优化缓存和备份策略等实现更全面的监控管理功能与HDFS集成，提供SQL命令，将数据库装入HDFS中并能够快速分析集成优秀的开源报表工具，使之具备一定的数据分析的能力。</p>
+<h4 id="jProxy"><a href="#jProxy" class="headerlink" title="jProxy"></a>jProxy</h4><ul>
+<li>JPROXY提供MariaDB, MySQL等数据库的统一接入访问，拥有流量过载保护，数据自动拆分，可配置路由规则，数据无缝迁移等功能。<br>应用场景：数据需要分库分表，自动扩容的应用。</li>
+</ul>
+<h5 id="架构图"><a href="#架构图" class="headerlink" title="架构图"></a>架构图</h5><p><img src="/img/blog/dbproxy/jproxy-1.png" alt="图jproxy架构"></p>
+<ul>
+<li>JProxy： 连接应用程序与MySQL数据库的中间件，解决数据的存储、提高应用程序访问数据库的响应速度。</li>
+<li>Jmanager：数据库路由的管理中心，并同时提供路由信息的增删改等API操作。</li>
+<li>jtransfer： 自动化数据库迁移工具， 配合jmanager、jproxy、对后端数据库进行在线迁移。</li>
+</ul>
+<p>jproxy 优化点</p>
+<p>基于阿里cobar改造</p>
+<ul>
+<li>性能调优</li>
+<li>Bug修复</li>
+<li>new feature</li>
+</ul>
+<p>jproxy 实践</p>
+<blockquote>
+<p>长sql 如 insert into tables values(…),(…)… 这样的语句若占有600左右kb，会导致proxy读却这个sql数据包很慢。<br>解决方案，将前端socket recivebuffer从默认值4k调整至128k</p>
+<p>后端实例连接池是以库为单位，当后端实例上有很多库时，连接数撑爆。<br>解决方案，改为以实例为单位</p>
+<p>jproxy线程数设置过大，导致mysql write超市，mysql关闭后端链接，导致jproxy read到EOF异常。<br>解决方案，将mysql write超时设置调高，并将jproxy execute线程数改小。</p>
+</blockquote>
+<p>线上jproxy问题<br>原因 LVS 不恰当修改<br>需要更加熟悉JProxy提供的监控工具（ <a href="http://jmonitor.xx.com/" target="_blank" rel="noopener">http://jmonitor.xx.com/</a> ）来第一时间掌握更多信息，以便和JProxy团队进行更高效的协作<br>另外jproxy要提供更可靠的服务<br>对应用来说，看到的是一个Big JProxy，它的具体实现包括核心的JProxy Server外，前端是LVS，后端是MySQL，现在这三部分都是不同的团队在运维的，当然是以JProxy团队为核心来协调的。<br>本次的排查过程中发现过一个现象： JProxy Server的连接数突增，但应用Application的访问量没有异常变化，这个也可以作为LVS变更引起的问题的一个辅证。<br>                       +———————————————————————–+<br>                       |                                                                       |<br>                       |                                                    +—————+  |<br>                       |                                                    |               |  |<br>                       |                                           +—–&gt;  | MySQL1        |  |<br>                       |                                           |        |               |  |<br>+————+         | +————-+        +—————+  |        +—————+  |<br>|            |         | |             |        |               |  |                           |<br>|  Application  +—-&gt; | | LVS         |  +–&gt;  | JProxy        +–+                           |<br>|            |         | |             |        |   Server      |  |        +—————+  |<br>|            |         | |             |        |               |  |        |               |  |<br>+————+         | +————-+        +—————+  +——&gt; | MySQL2        |  |<br>                       |                                                    |               |  |<br>                       |                                                    |               |  |<br>                       |                                                    +—————+  |<br>                       |                                                                       |<br>                       |                       Big JProxy                                      |<br>                       |                                                                       |<br>                       +———————————————————————–+</p>
+<h3 id="海关迁移"><a href="#海关迁移" class="headerlink" title="海关迁移"></a>海关迁移</h3><p>目标<br>dms系统数据库从oralce迁移至mysql。<br>dms系统支持日均单量达到1亿。<br>dms系统数据库读写tp99&lt;10毫秒。<br>迁移过程对业务无任何不良影响。</p>
+<p>### </p>
+<p>《常见问题及解决思路》</p>
+<p>1）可用性，解决思路是冗余（复制）</p>
+<p>2）读写比</p>
+<p>2.1）读多些少：用从库，缓存，索引来提高读性能</p>
+<p>2.2）业务层控制强制读主来解决从库不一致问题</p>
+<p>2.3）双淘汰来解决缓存不一致问题</p>
+<p>2.4）读写相近，写多读少：不要使用缓存，该怎么整怎么整</p>
+<p>《拆库后业务实战》</p>
+<p>1）不这么玩：联合查询、子查询、触发器、用户自定义函数、夸库事务</p>
+<p>2）IN查询怎么玩</p>
+<p>2.1）分发MR</p>
+<p>2.2）拼装成不同SQL语句</p>
+<p>3）非partition key查询怎么玩</p>
+<p>3.1）定位一个库</p>
+<p>3.2）分发MR</p>
+<p>4）夸库分页怎么玩</p>
+<p>4.1）修改sql语句，服务内排序</p>
+<p>4.2）引入特殊id，减少返回数量</p>
+<p>4.3）业务优化，禁止跨页查询，允许模糊查询</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mysql/" rel="tag">#mysql</a>
+          
+            <a href="/tags/mongo/" rel="tag">#mongo</a>
+          
+            <a href="/tags/数据迁移/" rel="tag">#数据迁移</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/25/[总结]disruptor总结/" rel="next" title="[总结]disruptor总结">
+                <i class="fa fa-chevron-left"></i> [总结]disruptor总结
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/25/[总结]java锁/" rel="prev" title="[总结]java锁">
+                [总结]java锁 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Mycat"><span class="nav-text">1) Mycat</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-cobar"><span class="nav-text">2) cobar</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#应用介绍："><span class="nav-text">应用介绍：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#cobar优点总结："><span class="nav-text">cobar优点总结：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#cobar缺点："><span class="nav-text">cobar缺点：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TDDL"><span class="nav-text">TDDL</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#优点"><span class="nav-text">优点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缺点"><span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MyCat"><span class="nav-text">MyCat</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#jProxy"><span class="nav-text">jProxy</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#架构图"><span class="nav-text">架构图</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#海关迁移"><span class="nav-text">海关迁移</span></a></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

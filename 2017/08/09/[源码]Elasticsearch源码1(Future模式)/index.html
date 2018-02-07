@@ -1,0 +1,753 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="es," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="整个源码阅读基于ElasticSearch5.4.3，后续会整理成一个系列去逐步探索Elasticsearch的世界。本文讨论了ES源码中广泛应用到的的Future模式。">
+<meta name="keywords" content="es">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[源码]Elasticsearch源码1(Future模式)">
+<meta property="og:url" content="https://psiitoy.github.io/2017/08/09/[源码]Elasticsearch源码1(Future模式)/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="整个源码阅读基于ElasticSearch5.4.3，后续会整理成一个系列去逐步探索Elasticsearch的世界。本文讨论了ES源码中广泛应用到的的Future模式。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.120Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[源码]Elasticsearch源码1(Future模式)">
+<meta name="twitter:description" content="整个源码阅读基于ElasticSearch5.4.3，后续会整理成一个系列去逐步探索Elasticsearch的世界。本文讨论了ES源码中广泛应用到的的Future模式。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/08/09/[源码]Elasticsearch源码1(Future模式)/"/>
+
+  <title> [源码]Elasticsearch源码1(Future模式) | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [源码]Elasticsearch源码1(Future模式)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-08-09T20:15:06+08:00" content="2017-08-09">
+              2017-08-09
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/08/09/[源码]Elasticsearch源码1(Future模式)/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/08/09/[源码]Elasticsearch源码1(Future模式)/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>整个源码阅读基于<code>ElasticSearch5.4.3</code>，后续会整理成一个系列去逐步探索<code>Elasticsearch</code>的世界。<br>本文讨论了<code>ES</code>源码中广泛应用到的的<code>Future</code>模式。</p>
+<a id="more"></a>
+<h2 id="1、-前言"><a href="#1、-前言" class="headerlink" title="1、 前言"></a>1、 前言</h2><p>首先分析客户端的RPC调用部分，使用了Future模式。</p>
+<h3 id="1-1-Future模式"><a href="#1-1-Future模式" class="headerlink" title="1.1 Future模式"></a>1.1 Future模式</h3><p>分析代码前先简单介绍下Future模式<br>From 《Java 高并发程序设计》<br>　　Future模式，核心思想是异步调用，就是当调用一个方法时，这个函数可能执行得很慢，就需要等待，<br>但是有时候并不着急要这个结果，所以选择不去傻傻等待，而是做其他的事情。就好比”双十一”购物，你买到了想要的东西，<br>那么你不可能等待它到货，然后才做另一件事情，你可能想继续购物其他的商品。而对于已经购买得商品，会生成一个订单，<br>你只需要等待这个订单的快递通知（notify）就行了。</p>
+<h3 id="1-2-一个最基本的future模式代码片段"><a href="#1-2-一个最基本的future模式代码片段" class="headerlink" title="1.2 一个最基本的future模式代码片段"></a>1.2 一个最基本的future模式代码片段</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Demo</span></span>&#123;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> Future <span class="title">request</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> Future future = <span class="keyword">new</span> Future();</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">new</span> Thread() &#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="comment">// 下面这个动作可能是耗时的</span></span><br><span class="line">                RealSubject subject = <span class="keyword">new</span> RealSubject();    <span class="comment">//构建过程可能是远程调用</span></span><br><span class="line">                future.setRealSubject(subject);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;.start();</span><br><span class="line">    </span><br><span class="line">        <span class="keyword">return</span> future;</span><br><span class="line">     &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="1-3-线程池的中的Future-FutureTask"><a href="#1-3-线程池的中的Future-FutureTask" class="headerlink" title="1.3 线程池的中的Future(FutureTask)"></a>1.3 线程池的中的Future(FutureTask)</h3><blockquote>
+<p>类比的我们看一下线程池的future实现，场景是把一个回调任务交给线程池然后返回给你一个Future，当任务执行完成释放阻塞。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractExecutorService</span> <span class="keyword">implements</span> <span class="title">ExecutorService</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> &lt;T&gt; <span class="function">Future&lt;T&gt; <span class="title">submit</span><span class="params">(Callable&lt;T&gt; task)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (task == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">        RunnableFuture&lt;T&gt; ftask = newTaskFor(task);</span><br><span class="line">        execute(ftask);</span><br><span class="line">        <span class="keyword">return</span> ftask;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> &lt;T&gt; <span class="function">RunnableFuture&lt;T&gt; <span class="title">newTaskFor</span><span class="params">(Callable&lt;T&gt; callable)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> FutureTask&lt;T&gt;(callable);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>线程池的submit过程后续单独讲,继续跟进FutureTask的run，发现最终调用set方法并且遍历通知Waitor。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FutureTask</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">RunnableFuture</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (state != NEW ||</span><br><span class="line">            !UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, runnerOffset,</span><br><span class="line">                                         <span class="keyword">null</span>, Thread.currentThread()))</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Callable&lt;V&gt; c = callable;</span><br><span class="line">            <span class="keyword">if</span> (c != <span class="keyword">null</span> &amp;&amp; state == NEW) &#123;</span><br><span class="line">                V result;</span><br><span class="line">                <span class="keyword">boolean</span> ran;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    result = c.call();</span><br><span class="line">                    ran = <span class="keyword">true</span>;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">                    result = <span class="keyword">null</span>;</span><br><span class="line">                    ran = <span class="keyword">false</span>;</span><br><span class="line">                    setException(ex);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (ran)</span><br><span class="line">                    set(result);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// runner must be non-null until state is settled to</span></span><br><span class="line">            <span class="comment">// prevent concurrent calls to run()</span></span><br><span class="line">            runner = <span class="keyword">null</span>;</span><br><span class="line">            <span class="comment">// state must be re-read after nulling runner to prevent</span></span><br><span class="line">            <span class="comment">// leaked interrupts</span></span><br><span class="line">            <span class="keyword">int</span> s = state;</span><br><span class="line">            <span class="keyword">if</span> (s &gt;= INTERRUPTING)</span><br><span class="line">                handlePossibleCancellationInterrupt(s);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(V v)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (UNSAFE.compareAndSwapInt(<span class="keyword">this</span>, stateOffset, NEW, COMPLETING)) &#123;</span><br><span class="line">            outcome = v;</span><br><span class="line">            UNSAFE.putOrderedInt(<span class="keyword">this</span>, stateOffset, NORMAL); <span class="comment">// final state 最终状态NORMAL</span></span><br><span class="line">            finishCompletion(); <span class="comment">//通知waitor</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;    </span><br><span class="line">    </span><br><span class="line">   <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">setException</span><span class="params">(Throwable t)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (UNSAFE.compareAndSwapInt(<span class="keyword">this</span>, stateOffset, NEW, COMPLETING)) &#123;</span><br><span class="line">            outcome = t;</span><br><span class="line">            UNSAFE.putOrderedInt(<span class="keyword">this</span>, stateOffset, EXCEPTIONAL); <span class="comment">// final state最终状态EXCEPTIONAL</span></span><br><span class="line">            finishCompletion();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;   </span><br><span class="line">    </span><br><span class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">finishCompletion</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// assert state &gt; COMPLETING;</span></span><br><span class="line">        <span class="keyword">for</span> (WaitNode q; (q = waiters) != <span class="keyword">null</span>;) &#123;</span><br><span class="line">            <span class="keyword">if</span> (UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, waitersOffset, q, <span class="keyword">null</span>)) &#123;</span><br><span class="line">                <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">                    Thread t = q.thread;</span><br><span class="line">                    <span class="keyword">if</span> (t != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        q.thread = <span class="keyword">null</span>;</span><br><span class="line">                        LockSupport.unpark(t);</span><br><span class="line">                    &#125;</span><br><span class="line">                    WaitNode next = q.next; <span class="comment">//遍历等待链表</span></span><br><span class="line">                    <span class="keyword">if</span> (next == <span class="keyword">null</span>)</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    q.next = <span class="keyword">null</span>; <span class="comment">// unlink to help gc</span></span><br><span class="line">                    q = next;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        done();</span><br><span class="line"></span><br><span class="line">        callable = <span class="keyword">null</span>;        <span class="comment">// to reduce footprint</span></span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>FutureTask是一种RunnableFuture，执行的是本地线程调用run()去同步的set(v)，<br>而我们需要做的是要等待Netty的异步回调。so我们需要的是另外的Future实现。</p>
+</blockquote>
+<h2 id="2、-ES中的Future模式"><a href="#2、-ES中的Future模式" class="headerlink" title="2、 ES中的Future模式"></a>2、 ES中的Future模式</h2><h3 id="2-1-场景"><a href="#2-1-场景" class="headerlink" title="2.1 场景"></a>2.1 场景</h3><blockquote>
+<p>我们需要的场景是(先不讨论ES是怎么设计的，我们自己设计一个Future)</p>
+</blockquote>
+<p>  1) client -&gt; get();//阻塞<br>  2) Netty异步接收Response然后cast to V 调用requestId对应的回调responseHandler<br>  3) 然后再调用responseHandler 的代理listener<br>  4) listener的实现是一个Future 需要做set(v) then notify get()的过程。(get可能是多处，那么肯定是要共享锁)</p>
+<blockquote>
+<p>看了上面四条，是不是脑子里马上想到以下几个方案可以实现(线程之间通信)：</p>
+</blockquote>
+<p>  1) BlockingQueue，然后1对应的take(),3对应的发起put()。(源自2)<br>  2) Condition，然后1对应的循环+条件+await(),3对应的发起signal()。(源自3)<br>  3) 利用共享模式的Aqs，自己基于cas和等待队列实现。<br>  4) 同步代码块</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123; <span class="comment">// 旋锁</span></span><br><span class="line">            <span class="keyword">while</span> (!isDone) &#123; <span class="comment">// 是否有结果了</span></span><br><span class="line">                wait(); <span class="comment">//没结果是释放锁，让当前线程处于等待状态</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setDone</span><span class="params">(Response res)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.res = res;</span><br><span class="line">        isDone = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123; <span class="comment">//获取锁，因为前面wait()已经释放了callback的锁了</span></span><br><span class="line">            notifyAll(); <span class="comment">// 唤醒处于等待的线程</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Es选择的是3。BaseFuture-&gt;Sync-&gt;Aqs。</p>
+</blockquote>
+<ul>
+<li><p>当然了我们万能的guava的<a href="http://blog.csdn.net/xxcupid/article/details/51912207" target="_blank" rel="noopener">AbstractFuture</a>同样给出了实现，<br>jdk的异步非阻塞的<a href="http://blog.csdn.net/zero__007/article/details/50571703" target="_blank" rel="noopener">CompletableFuture</a>也给出了实现。</p>
+</li>
+<li><p>作者本人也基于CompletableFuture对源生es做了改造。es自己实现的原因见<a href="https://github.com/elastic/elasticsearch/commits/master/core/src/main/java/org/elasticsearch/common/util/concurrent/BaseFuture.java" target="_blank" rel="noopener">BaseFuture链接</a></p>
+</li>
+</ul>
+<h3 id="2-2-源码"><a href="#2-2-源码" class="headerlink" title="2.2 源码"></a>2.2 源码</h3><ul>
+<li><p>回到正题，我们继续看源码，Client向网关节点A发起异步请求，拿到ActionFuture(继承自Future)。代码如下</p>
+</li>
+<li><p>AbstractClient实现了Client 对应的所有对外提供的action的api，比如 index,get,search等  </p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Client</span></span>&#123;</span><br><span class="line">    <span class="function">ActionFuture&lt;IndexResponse&gt; <span class="title">index</span><span class="params">(IndexRequest request)</span></span>;</span><br><span class="line">    <span class="function">ActionFuture&lt;GetResponse&gt; <span class="title">get</span><span class="params">(GetRequest request)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractClient</span> <span class="keyword">extends</span> <span class="title">AbstractComponent</span> <span class="keyword">implements</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> &lt;Request extends ActionRequest, Response extends ActionResponse, RequestBuilder extends ActionRequestBuilder&lt;Request, Response, RequestBuilder&gt;&gt; <span class="function">ActionFuture&lt;Response&gt; <span class="title">execute</span><span class="params">(Action&lt;Request, Response, RequestBuilder&gt; action, Request request)</span> </span>&#123;</span><br><span class="line">        PlainActionFuture&lt;Response&gt; actionFuture = PlainActionFuture.newFuture();<span class="comment">// 初始化future</span></span><br><span class="line">        execute(action, request, actionFuture);<span class="comment">// code1 发起异步请求</span></span><br><span class="line">        <span class="keyword">return</span> actionFuture;<span class="comment">// code2 返回还没准备好的数据(等待Netty的异步回调)</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>TransportActionNodeProxy专门负责代理请求对应的action(比如get search bulk等)</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TransportActionNodeProxy</span>&lt;<span class="title">Request</span> <span class="keyword">extends</span> <span class="title">ActionRequest</span>, <span class="title">Response</span> <span class="keyword">extends</span> <span class="title">ActionResponse</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractComponent</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(<span class="keyword">final</span> DiscoveryNode node, <span class="keyword">final</span> Request request, <span class="keyword">final</span> ActionListener&lt;Response&gt; listener)</span> </span>&#123;</span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 请求校验(匿名内部类)</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@see</span> GetRequest#validate(),SearchRequest#validate()</span></span><br><span class="line"><span class="comment">         *</span></span><br><span class="line"><span class="comment">         */</span>        </span><br><span class="line">        ActionRequestValidationException validationException = request.validate();</span><br><span class="line">        <span class="keyword">if</span> (validationException != <span class="keyword">null</span>) &#123;</span><br><span class="line">            listener.onFailure(validationException);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 通过netty的channel将数据写入</span></span><br><span class="line">        transportService.sendRequest(node, action.name(), request, transportOptions,</span><br><span class="line">            <span class="keyword">new</span> ActionListenerResponseHandler&lt;&gt;(listener, action::newResponse));</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>code1最终会执行code3</p>
+</li>
+<li><p>code2返回的future在其调用get()之前都是非阻塞的，而code3只是发起了请求并把requestId注册回调函数，<br>只有handleResponse的时候调用该resquestId的回调才会set(v) 填充数据并释放阻塞。</p>
+</li>
+<li><p>TransportService(Es通信过程中存请求上下文，以及RPC方法映射，即request对应action的地方)，<br>的 clientHandlers就是异步回调池(根据requestId拿到回调执行),存放的就是requestId以及对应的<br>TransportResponseHandler，与code1的request是一一对应的。</p>
+</li>
+<li><p>ActionListener就是声明的回调接口，onResponse最终会执行set(v)，而onFailure会执行setException(e),把code2赋值。</p>
+</li>
+<li><p>code1a  es5.x比2.x增加了Supplier，ActionListenerResponseHandler的回调声明不用实现newInstance了，<br>取而代之的是声明式的Supplier(获取只需要掉无参get())，由上方的GenericAction子类(专门声明action消息的)去new。<br>5.x大量使用了jdk8的特性。</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TransportService</span> <span class="keyword">extends</span> <span class="title">AbstractLifecycleComponent</span>&lt;<span class="title">TransportService</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ConcurrentMapLong&lt;RequestHolder&gt; clientHandlers = ConcurrentCollections.newConcurrentMapLongWithAggressiveConcurrency();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ActionListener</span>&lt;<span class="title">Response</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A response handler.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Response response)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A failure handler.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Throwable e)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * A simple base class for action response listeners, defaulting to using the SAME executor (as its</span></span><br><span class="line"><span class="comment"> * very common on response handlers).</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ActionListenerResponseHandler</span>&lt;<span class="title">Response</span> <span class="keyword">extends</span> <span class="title">TransportResponse</span>&gt; <span class="keyword">implements</span> <span class="title">TransportResponseHandler</span>&lt;<span class="title">Response</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ActionListener&lt;Response&gt; listener;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Supplier&lt;Response&gt; responseSupplier;  <span class="comment">//code1a es5.x比2.x增加了Supplier，回调声明不用实现newInstance了</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ActionListenerResponseHandler</span><span class="params">(ActionListener&lt;Response&gt; listener, Supplier&lt;Response&gt; responseSupplier)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.listener = Objects.requireNonNull(listener);</span><br><span class="line">        <span class="keyword">this</span>.responseSupplier = Objects.requireNonNull(responseSupplier);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleResponse</span><span class="params">(Response response)</span> </span>&#123;</span><br><span class="line">        listener.onResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handleException</span><span class="params">(TransportException e)</span> </span>&#123;</span><br><span class="line">        listener.onFailure(e);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Response <span class="title">newInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> responseSupplier.get();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">executor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ThreadPool.Names.SAME;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//code1中PlainActionFuture的父类AdapterActionFuture(适配器)，我们只看两个方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AdapterActionFuture</span>&lt;<span class="title">T</span>, <span class="title">L</span>&gt; <span class="keyword">extends</span> <span class="title">BaseFuture</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">ActionFuture</span>&lt;<span class="title">T</span>&gt;, <span class="title">ActionListener</span>&lt;<span class="title">L</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">actionGet</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> get();   <span class="comment">//code4</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Future got interrupted"</span>, e);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> rethrowExecutionException(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(L result)</span> </span>&#123;</span><br><span class="line">        set(convert(result));   <span class="comment">//code5</span></span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Throwable e)</span> </span>&#123;</span><br><span class="line">        setException(e);    <span class="comment">//code6</span></span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> T <span class="title">convert</span><span class="params">(L listenerResponse)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>我们java客户端调用的场景通常是这样的</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestGet</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        GetResponse sResponse = Tool.CLIENT.prepareGet(indexName, typeName, id).get();</span><br><span class="line">        logger.info(sResponse);</span><br><span class="line">        Tool.CLIENT.close();</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>继续跟code4,5,6发现其实现是在父类BaseFuture，且具体实现其实是交给了内部类Sync(继承自AQS)</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseFuture</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Future</span>&lt;<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Sync&lt;V&gt; sync = <span class="keyword">new</span> Sync&lt;&gt;();    </span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, ExecutionException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> sync.get();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">set</span><span class="params">(@Nullable V value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = sync.set(value);</span><br><span class="line">        <span class="keyword">if</span> (result) &#123;</span><br><span class="line">            done();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">setException</span><span class="params">(Throwable throwable)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> result = sync.setException(checkNotNull(throwable));</span><br><span class="line">        <span class="keyword">if</span> (result) &#123;</span><br><span class="line">            done();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Sync</span>&lt;<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractQueuedSynchronizer</span> </span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="function">V <span class="title">get</span><span class="params">()</span> <span class="keyword">throws</span> CancellationException, ExecutionException,</span></span><br><span class="line"><span class="function">                InterruptedException </span>&#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Acquire the shared lock allowing interruption.</span></span><br><span class="line">            acquireSharedInterruptibly(-<span class="number">1</span>);     <span class="comment">//code7</span></span><br><span class="line">            <span class="keyword">return</span> getValue();  <span class="comment">//code8</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">boolean</span> <span class="title">set</span><span class="params">(@Nullable V v)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> complete(v, <span class="keyword">null</span>, COMPLETED);    </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">boolean</span> <span class="title">setException</span><span class="params">(Throwable t)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> complete(<span class="keyword">null</span>, t, COMPLETED);    </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> complete(<span class="keyword">null</span>, <span class="keyword">null</span>, CANCELLED);     </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">tryAcquireShared</span><span class="params">(<span class="keyword">int</span> ignored)</span> </span>&#123;   <span class="comment">//对应的code11</span></span><br><span class="line">            <span class="keyword">if</span> (isDone()) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;        </span><br><span class="line">        </span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">tryReleaseShared</span><span class="params">(<span class="keyword">int</span> finalState)</span> </span>&#123;</span><br><span class="line">            setState(finalState);   <span class="comment">//设置状态为完成</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;        </span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">complete</span><span class="params">(@Nullable V v, @Nullable Throwable t,</span></span></span><br><span class="line"><span class="function"><span class="params">                                 <span class="keyword">int</span> finalState)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">boolean</span> doCompletion = compareAndSetState(RUNNING, COMPLETING); <span class="comment">//code9  cas防止并发</span></span><br><span class="line">            <span class="keyword">if</span> (doCompletion) &#123;</span><br><span class="line">                <span class="keyword">this</span>.value = v;</span><br><span class="line">                <span class="keyword">this</span>.exception = t;</span><br><span class="line">                releaseShared(finalState);  <span class="comment">//code10    </span></span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (getState() == COMPLETING) &#123;<span class="comment">//别人也在操作 置完成</span></span><br><span class="line">                acquireShared(-<span class="number">1</span>);  <span class="comment">//code11  park自己 等待别人完成   </span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> doCompletion;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">       <span class="function"><span class="keyword">boolean</span> <span class="title">isDone</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> (getState() &amp; (COMPLETED | CANCELLED)) != <span class="number">0</span>;</span><br><span class="line">        &#125;        </span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>AQS park 和 unpark的过程</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractQueuedSynchronizer</span> <span class="keyword">extends</span> <span class="title">AbstractOwnableSynchronizer</span></span></span><br><span class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span> </span>&#123;</span><br><span class="line">     <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Acquires in shared interruptible mode.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> arg the acquire argument</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doAcquireSharedInterruptibly</span><span class="params">(<span class="keyword">int</span> arg)</span>  <span class="comment">//对应的code7阻塞</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> Node node = addWaiter(Node.SHARED);   <span class="comment">//共享锁</span></span><br><span class="line">        <span class="keyword">boolean</span> failed = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> (;;) &#123;  <span class="comment">//自旋</span></span><br><span class="line">                <span class="keyword">final</span> Node p = node.predecessor();</span><br><span class="line">                <span class="keyword">if</span> (p == head) &#123;    <span class="comment">//如果队首那么尝试一次跳出判定</span></span><br><span class="line">                    <span class="keyword">int</span> r = tryAcquireShared(arg);  <span class="comment">//code12 跳出条件抽象方法子类实现</span></span><br><span class="line">                    <span class="keyword">if</span> (r &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                        setHeadAndPropagate(node, r);</span><br><span class="line">                        p.next = <span class="keyword">null</span>; <span class="comment">// help GC</span></span><br><span class="line">                        failed = <span class="keyword">false</span>;</span><br><span class="line">                        <span class="keyword">return</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (shouldParkAfterFailedAcquire(p, node) &amp;&amp;</span><br><span class="line">                    parkAndCheckInterrupt())</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (failed)</span><br><span class="line">                cancelAcquire(node);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doReleaseShared</span><span class="params">()</span> </span>&#123;    <span class="comment">//释放锁通知所有</span></span><br><span class="line">        <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">            Node h = head;</span><br><span class="line">            <span class="keyword">if</span> (h != <span class="keyword">null</span> &amp;&amp; h != tail) &#123;</span><br><span class="line">                <span class="keyword">int</span> ws = h.waitStatus;</span><br><span class="line">                <span class="keyword">if</span> (ws == Node.SIGNAL) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (!compareAndSetWaitStatus(h, Node.SIGNAL, <span class="number">0</span>))</span><br><span class="line">                        <span class="keyword">continue</span>;            <span class="comment">// loop to recheck cases</span></span><br><span class="line">                    unparkSuccessor(h);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (ws == <span class="number">0</span> &amp;&amp;</span><br><span class="line">                         !compareAndSetWaitStatus(h, <span class="number">0</span>, Node.PROPAGATE))</span><br><span class="line">                    <span class="keyword">continue</span>;                <span class="comment">// loop on failed CAS</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (h == head)                   <span class="comment">// loop if head changed</span></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;    </span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">releaseShared</span><span class="params">(<span class="keyword">int</span> arg)</span> </span>&#123;   <span class="comment">//对应的code10</span></span><br><span class="line">        <span class="keyword">if</span> (tryReleaseShared(arg)) &#123;    <span class="comment">//抽象方法子类实现 设置状态为完成</span></span><br><span class="line">            doReleaseShared();      <span class="comment">//释放锁</span></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>那么对应get就是最终会执行code7去阻塞(采用的AQS共享模式)，而异步回调结果的onResponse和onFailure，<br>就都是对应到了 code9,code10,code11。code9就是设置aqs队列的状态为完成，<br>code10是针对共享模式的锁释放(比如读锁),code11是发现别的线程正在设置完成中(并发问题)，等待别人设置完成(小概率)。</li>
+</ul>
+<h2 id="3、-总结"><a href="#3、-总结" class="headerlink" title="3、 总结"></a>3、 总结</h2><p>  Future模式本身是一种被广泛运用的并发设计模式，ES自己通过AQS实现了BaseFuture并广泛的应用在了客户端Api的设计上。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/es/" rel="tag">#es</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/06/18/[总结]数据结构之jcf(java集合框架)/" rel="next" title="[总结]数据结构之jcf(java集合框架)">
+                <i class="fa fa-chevron-left"></i> [总结]数据结构之jcf(java集合框架)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/10/[源码]Elasticsearch源码2(RPC)/" rel="prev" title="[源码]Elasticsearch源码2(RPC)">
+                [源码]Elasticsearch源码2(RPC) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、-前言"><span class="nav-text">1、 前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-Future模式"><span class="nav-text">1.1 Future模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-一个最基本的future模式代码片段"><span class="nav-text">1.2 一个最基本的future模式代码片段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-线程池的中的Future-FutureTask"><span class="nav-text">1.3 线程池的中的Future(FutureTask)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、-ES中的Future模式"><span class="nav-text">2、 ES中的Future模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-场景"><span class="nav-text">2.1 场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-源码"><span class="nav-text">2.2 源码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、-总结"><span class="nav-text">3、 总结</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

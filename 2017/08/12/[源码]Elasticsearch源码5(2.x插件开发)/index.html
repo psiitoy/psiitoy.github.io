@@ -1,0 +1,857 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="es," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文感谢 elasticsearch源码分析之plugin的开发 的精彩介绍，又梳理了其他相关内容。以下讲述了基于maven构建的2.x版本es插件开发。重点讨论如何基于ActionFilter开发Filter类型的插件(同时拦截生效与Tcp,Http)，同时简述了插件开发简单流程。">
+<meta name="keywords" content="es">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[源码]Elasticsearch源码5(2.x插件开发)">
+<meta property="og:url" content="https://psiitoy.github.io/2017/08/12/[源码]Elasticsearch源码5(2.x插件开发)/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="本文感谢 elasticsearch源码分析之plugin的开发 的精彩介绍，又梳理了其他相关内容。以下讲述了基于maven构建的2.x版本es插件开发。重点讨论如何基于ActionFilter开发Filter类型的插件(同时拦截生效与Tcp,Http)，同时简述了插件开发简单流程。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin6.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin7.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin8.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin3.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin4.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin5.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin4.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.125Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[源码]Elasticsearch源码5(2.x插件开发)">
+<meta name="twitter:description" content="本文感谢 elasticsearch源码分析之plugin的开发 的精彩介绍，又梳理了其他相关内容。以下讲述了基于maven构建的2.x版本es插件开发。重点讨论如何基于ActionFilter开发Filter类型的插件(同时拦截生效与Tcp,Http)，同时简述了插件开发简单流程。">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-plugin6.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/08/12/[源码]Elasticsearch源码5(2.x插件开发)/"/>
+
+  <title> [源码]Elasticsearch源码5(2.x插件开发) | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [源码]Elasticsearch源码5(2.x插件开发)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-08-12T21:15:06+08:00" content="2017-08-12">
+              2017-08-12
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/08/12/[源码]Elasticsearch源码5(2.x插件开发)/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/08/12/[源码]Elasticsearch源码5(2.x插件开发)/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文感谢 <a href="http://www.opscoder.info/es_plugin.html" target="_blank" rel="noopener">elasticsearch源码分析之plugin的开发</a> 的精彩介绍，又梳理了其他相关内容。<br>以下讲述了基于maven构建的2.x版本es插件开发。重点讨论如何基于ActionFilter开发Filter类型的插件(同时拦截生效与Tcp,Http)，同时简述了插件开发简单流程。</p>
+<a id="more"></a>
+<h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><h3 id="1-1-什么是ES插件"><a href="#1-1-什么是ES插件" class="headerlink" title="1.1 什么是ES插件"></a>1.1 什么是ES插件</h3><ul>
+<li><p>elasticsearch拥有丰富的插件，而其灵活的插件开发机制让我们可以轻松的扩展我们自己想要的功能。</p>
+</li>
+<li><p>对于Elasticsearch的plugin可以分为两类：<code>jvm</code>和<code>site</code>；其中site就是说要实现前端界面的，其他的都可以归纳到<code>jvm</code>这一类中。</p>
+<ul>
+<li><code>site:true</code>表示发布为网站形式，<code>_site</code>目录下的内容将会起作用。</li>
+<li><code>jvm：true</code>表示设置的classname对应的类将会被加载，对于依赖的资源，配置等信息也需要打包成jar。 </li>
+</ul>
+</li>
+</ul>
+<h3 id="1-2-插件调试与DEBUG"><a href="#1-2-插件调试与DEBUG" class="headerlink" title="1.2 插件调试与DEBUG"></a>1.2 插件调试与DEBUG</h3><ul>
+<li><p>作者感觉debug过程确实比较痛，要发布打包，重启之类的操作。(下面马上讲一个稍微方便一些的开发插件方式)</p>
+<ul>
+<li><p>更改<code>elasticsearch.yml</code>添加<code>path.plugins: /home/wangdi/{user_plugin_home}</code></p>
+</li>
+<li><p><code>{user_plugin_home}</code>可以直接设置成plugin的编译目录，这样打个包就直接能调试了。</p>
+</li>
+<li><p>如果想同时调试多个插件，那么可以在<code>{user_plugin_home}</code>创建多个软链接。</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>创建软链的命令</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ~/zjj-esplugins$ ln -s /home/wangdi/IdeaWorkspace/middleware/elasticsearch2.1.2/plugins/jd-actionmonitor/target/releases/jd-actionmonitor-2.1.2-SNAPSHOT monitor</span><br><span class="line"></span><br><span class="line">$ ~/zjj-esplugins$ ln -s /home/wangdi/IdeaWorkspace/middleware/elasticsearch2.1.2/core/plugins/head  head</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>最终笔者<code>{user_plugin_home}</code>目录如下</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ~/zjj-esplugins$ ls</span><br><span class="line">head  monitor</span><br></pre></td></tr></table></figure>
+<h3 id="1-3-举两个自己开发的Plugin例子"><a href="#1-3-举两个自己开发的Plugin例子" class="headerlink" title="1.3 举两个自己开发的Plugin例子"></a>1.3 举两个自己开发的Plugin例子</h3><blockquote>
+<p>相关源码demo可参见 <a href="https://github.com/psiitoy/es-plugin-demo" target="_blank" rel="noopener">es-plugin-demo</a></p>
+</blockquote>
+<p>开发一个Rest类型的插件开发大概就是需要创建下面几个类。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">org.xxx.myplugin</span><br><span class="line">|-MyModule</span><br><span class="line">|-MyPlugin</span><br><span class="line">|-MyService</span><br></pre></td></tr></table></figure>
+<p>看一个继承BaseRestHandler实现的Service的例子(禁止删除，和黑名单禁止访问名，同时注册了一个rest服务<code>hello</code>)</p>
+<blockquote>
+<p>注意：<code>controller.registerFilter</code>只是拦截到了http类型的请求。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyService</span> <span class="keyword">extends</span> <span class="title">BaseRestHandler</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">MyService</span><span class="params">(<span class="keyword">final</span> Settings settings, RestController controller, Client client)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(settings, controller, client);</span><br><span class="line">        controller.registerHandler(Method.GET, <span class="string">"/hello/"</span>, <span class="keyword">this</span>);</span><br><span class="line">        controller.registerHandler(Method.GET, <span class="string">"/hello/&#123;name&#125;"</span>, <span class="keyword">this</span>);</span><br><span class="line">        controller.registerFilter(<span class="keyword">new</span> RestFilter() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(RestRequest restRequest, RestChannel restChannel, RestFilterChain restFilterChain)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (restRequest.method() == Method.DELETE) &#123;</span><br><span class="line">                    restChannel.sendResponse(<span class="keyword">new</span> BytesRestResponse(RestStatus.FORBIDDEN, <span class="string">"forbidden delete method"</span>));</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span>(restRequest.uri().contains(<span class="string">"_search"</span>)) &#123;</span><br><span class="line">                    List&lt;String&gt; indices = getIndices(restRequest);</span><br><span class="line">                    String deny_indices = settings.get(<span class="string">"deny_indices"</span>);</span><br><span class="line">                    <span class="keyword">assert</span> indices != <span class="keyword">null</span>;</span><br><span class="line">                    <span class="keyword">for</span>(String index:indices)&#123;</span><br><span class="line">                        <span class="keyword">if</span>(index.contains(deny_indices))&#123;</span><br><span class="line">                            restChannel.sendResponse(<span class="keyword">new</span> BytesRestResponse(RestStatus.FORBIDDEN, <span class="string">"forbidden to operate index:"</span>+index));</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    restFilterChain.continueProcessing(restRequest, restChannel);</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                restFilterChain.continueProcessing(restRequest, restChannel);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">handleRequest</span><span class="params">(RestRequest request, RestChannel channel, Client client)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        logger.debug(<span class="string">"HelloWorldAction.handleRequest called"</span>);</span><br><span class="line">        <span class="keyword">final</span> String name = request.hasParam(<span class="string">"name"</span>) ? request.param(<span class="string">"name"</span>) : <span class="string">"world"</span>;</span><br><span class="line"></span><br><span class="line">        String content = <span class="string">"&#123;\"success\":true, \"message\":\"hello "</span> + name + <span class="string">"\"&#125;"</span>;</span><br><span class="line"></span><br><span class="line">        RestResponse response = <span class="keyword">new</span> BytesRestResponse(RestStatus.OK, BytesRestResponse.TEXT_CONTENT_TYPE, content);</span><br><span class="line">        channel.sendResponse(response);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> List&lt;String&gt; <span class="title">getIndices</span><span class="params">(<span class="keyword">final</span> RestRequest request)</span> </span>&#123;</span><br><span class="line">        String[] indices = <span class="keyword">new</span> String[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">final</span> String path = request.path();</span><br><span class="line">        System.out.println(<span class="string">"Evaluate decoded path for indices'"</span> + path + <span class="string">"'"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!path.startsWith(<span class="string">"/"</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (path.length() &gt; <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">int</span> endIndex;</span><br><span class="line">            <span class="keyword">if</span> ((path.indexOf(<span class="string">'/'</span>, <span class="number">1</span>)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                endIndex = path.indexOf(<span class="string">'/'</span>, <span class="number">1</span>);</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                endIndex = path.length();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (!path.trim().startsWith(<span class="string">"/_"</span>)) &#123;</span><br><span class="line">                indices = Strings.splitStringByCommaToArray(path.substring(<span class="number">1</span>,endIndex));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"Indices: "</span> + Arrays.toString(indices));</span><br><span class="line">        <span class="keyword">return</span> Arrays.asList(indices);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而针对于拦截请求类型的插件开发就是把Service替成命名Filter就可以了（ActionFilter是拦截TransportAction，包含Http,Tcp）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">org.xxx.myplugin</span><br><span class="line">|-MyModule</span><br><span class="line">|-MyPlugin</span><br><span class="line">|-MyFilter</span><br></pre></td></tr></table></figure>
+<p>我们看一个自定义ActionFilter的例子。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyLogFilter</span> <span class="keyword">implements</span> <span class="title">ActionFilter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ESLogger logger = Loggers.getLogger(MyLogFilter.class);</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">order</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">apply</span><span class="params">(String action, ActionRequest request, ActionListener listener, ActionFilterChain chain)</span> </span>&#123;</span><br><span class="line">        logger.info(<span class="string">"request!! action=&#123;&#125;,time=&#123;&#125;"</span>, action , <span class="keyword">new</span> Date());<span class="comment">//我们加的日志</span></span><br><span class="line">        chain.proceed(action, request, listener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">apply</span><span class="params">(String action, ActionResponse response, ActionListener listener, ActionFilterChain chain)</span> </span>&#123;</span><br><span class="line">        logger.info(<span class="string">"response!! action=&#123;&#125;,time=&#123;&#125;"</span>, action , <span class="keyword">new</span> Date());<span class="comment">//我们加的日志</span></span><br><span class="line">        chain.proceed(action, response, listener);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="二、ES插件开发与es核心包插件模块源码分析"><a href="#二、ES插件开发与es核心包插件模块源码分析" class="headerlink" title="二、ES插件开发与es核心包插件模块源码分析"></a>二、ES插件开发与es核心包插件模块源码分析</h2><h3 id="2-1-自定义插件模块结构"><a href="#2-1-自定义插件模块结构" class="headerlink" title="2.1 自定义插件模块结构"></a>2.1 自定义插件模块结构</h3><ul>
+<li>插件源码包 </li>
+</ul>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin6.png" alt="图 plugin6"></p>
+<ul>
+<li>插件发行包</li>
+</ul>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin7.png" alt="图 plugin7"></p>
+<ul>
+<li>es源码插件加载位置</li>
+</ul>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin8.png" alt="图 plugin8"></p>
+<h3 id="2-2-es核心包插件模块结构"><a href="#2-2-es核心包插件模块结构" class="headerlink" title="2.2 es核心包插件模块结构"></a>2.2 es核心包插件模块结构</h3><ul>
+<li><p>PluginManager类，插件管理类，负责插件的安装，卸载，下载等工作。</p>
+</li>
+<li><p>PluginsHelper类，插件帮助类，负责列出环境下面所有的site插件。</p>
+</li>
+<li><p>PluginsService类，插件服务类，负责插件的加载，实例化和维护插件信息。</p>
+</li>
+</ul>
+<ul>
+<li>初始化Node的时候，首先会实例化 PluginsService 类，然后注入PluginsModule模块(将我们开发的插件加入容器)。</li>
+</ul>
+<blockquote>
+<p><code>tmpEnv.pluginsFile()</code>获取的地址就是<code>{ES_HOME}/plugins</code></p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin3.png" alt="图 plugin3"></p>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin4.png" alt="图 plugin4"></p>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin5.png" alt="图 plugin5"></p>
+<blockquote>
+<p>补充：附上带中文注释的<code>PluginsService</code>构造过程,可以看出其功能是注册ES根目录<code>{ES_HOME}/plugins</code>文件夹下的所有插件。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PluginsService</span> <span class="keyword">extends</span> <span class="title">AbstractComponent</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="title">PluginsService</span><span class="params">(Settings settings, Environment environment)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(settings);</span><br><span class="line">        <span class="keyword">this</span>.environment = environment;</span><br><span class="line"></span><br><span class="line">        Map&lt;String, Plugin&gt; plugins = Maps.newHashMap();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//首先，我们从配置文件加载，默认的插件类</span></span><br><span class="line">        String[] defaultPluginsClasses = settings.getAsArray(<span class="string">"plugin.types"</span>);</span><br><span class="line">        <span class="keyword">for</span> (String pluginClass : defaultPluginsClasses) &#123;</span><br><span class="line">            Plugin plugin = loadPlugin(pluginClass, settings);</span><br><span class="line">            plugins.put(plugin.name(), plugin);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 现在, 我们查找,所有的在ClassPath下面的插件</span></span><br><span class="line">        loadPluginsIntoClassLoader();</span><br><span class="line">        plugins.putAll(loadPluginsFromClasspath(settings)); <span class="comment">//加载JVM插件</span></span><br><span class="line">        Set&lt;String&gt; sitePlugins = PluginsHelper.sitePlugins(<span class="keyword">this</span>.environment); <span class="comment">//加载站点插件</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">//强制依赖的插件，如果没有找到</span></span><br><span class="line">        String[] mandatoryPlugins = settings.getAsArray(<span class="string">"plugin.mandatory"</span>, <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">if</span> (mandatoryPlugins != <span class="keyword">null</span>) &#123;</span><br><span class="line">            Set&lt;String&gt; missingPlugins = Sets.newHashSet();</span><br><span class="line">            <span class="keyword">for</span> (String mandatoryPlugin : mandatoryPlugins) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!plugins.containsKey(mandatoryPlugin) &amp;&amp; !sitePlugins.contains(mandatoryPlugin) &amp;&amp; !missingPlugins.contains(mandatoryPlugin)) &#123;</span><br><span class="line">                    missingPlugins.add(mandatoryPlugin);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!missingPlugins.isEmpty()) &#123;</span><br><span class="line">            	<span class="comment">//抛出异常，整个节点启动失败！</span></span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> ElasticSearchException(<span class="string">"Missing mandatory plugins ["</span> + Strings.collectionToDelimitedString(missingPlugins, <span class="string">", "</span>) + <span class="string">"]"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        logger.info(<span class="string">"loaded &#123;&#125;, sites &#123;&#125;"</span>, plugins.keySet(), sitePlugins);</span><br><span class="line">        <span class="keyword">this</span>.plugins = ImmutableMap.copyOf(plugins);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//现在，所有插件都加载好了,处理插件实现类的 onModule 方法的引用 ,这里有 依赖注入的秘密。</span></span><br><span class="line">        </span><br><span class="line">        MapBuilder&lt;Plugin, List&lt;OnModuleReference&gt;&gt; onModuleReferences = MapBuilder.newMapBuilder();</span><br><span class="line">        <span class="keyword">for</span> (Plugin plugin : plugins.values()) &#123;</span><br><span class="line">            List&lt;OnModuleReference&gt; list = Lists.newArrayList();</span><br><span class="line">            <span class="comment">//....</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.onModuleReferences = onModuleReferences.immutableMap();</span><br><span class="line">        <span class="keyword">this</span>.refreshInterval = componentSettings.getAsTime(<span class="string">"info_refresh_interval"</span>, TimeValue.timeValueSeconds(<span class="number">10</span>));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-3-开发一个Filter类型的插件。（如日志，监控等）"><a href="#2-3-开发一个Filter类型的插件。（如日志，监控等）" class="headerlink" title="2.3 开发一个Filter类型的插件。（如日志，监控等）"></a>2.3 开发一个Filter类型的插件。（如日志，监控等）</h3><blockquote>
+<p>首先在例子中我们开发的插件名称叫<code>ActionMonitor</code>，功能是做TP监控统计。（本文不讨论监控的实现），那么通过<code>ActionFilter</code>实现。<br>注意:ActionMonitor是我们自己定义的类。</p>
+</blockquote>
+<ul>
+<li>我们首先讨论<code>ActionFilter</code>是做什么的</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ActionFilter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">order</span><span class="params">()</span></span>;    <span class="comment">//拦截顺序</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">apply</span><span class="params">(String action, ActionRequest request, ActionListener listener, ActionFilterChain chain)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">apply</span><span class="params">(String action, ActionResponse response, ActionListener listener, ActionFilterChain chain)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>注释:</p>
+<ul>
+<li><p>第一个apply是request的拦截方法</p>
+</li>
+<li><p>第二个apply是response的拦截方法</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>而后我们看下 ActionFilter拦截的对象 TransportAction。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">TransportAction</span>&lt;<span class="title">Request</span> <span class="keyword">extends</span> <span class="title">ActionRequest</span>, <span class="title">Response</span> <span class="keyword">extends</span> <span class="title">ActionResponse</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractComponent</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//属性略</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">TransportAction</span><span class="params">(Settings settings, String actionName, ThreadPool threadPool, ActionFilters actionFilters,</span></span></span><br><span class="line"><span class="function"><span class="params">                              IndexNameExpressionResolver indexNameExpressionResolver)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(settings);</span><br><span class="line">        <span class="keyword">this</span>.threadPool = threadPool;</span><br><span class="line">        <span class="keyword">this</span>.actionName = actionName;</span><br><span class="line">        <span class="keyword">this</span>.filters = actionFilters.filters();</span><br><span class="line">        <span class="keyword">this</span>.parseFieldMatcher = <span class="keyword">new</span> ParseFieldMatcher(settings);</span><br><span class="line">        <span class="keyword">this</span>.indexNameExpressionResolver = indexNameExpressionResolver;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//其他方法略</span></span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Request request, ActionListener&lt;Response&gt; listener)</span> </span>&#123;</span><br><span class="line">        ActionRequestValidationException validationException = request.validate();</span><br><span class="line">        <span class="keyword">if</span> (validationException != <span class="keyword">null</span>) &#123;</span><br><span class="line">            listener.onFailure(validationException);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (filters.length == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                doExecute(request, listener);</span><br><span class="line">            &#125; <span class="keyword">catch</span>(Throwable t) &#123;</span><br><span class="line">                logger.trace(<span class="string">"Error during transport action execution."</span>, t);</span><br><span class="line">                listener.onFailure(t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            RequestFilterChain requestFilterChain = <span class="keyword">new</span> RequestFilterChain&lt;&gt;(<span class="keyword">this</span>, logger);<span class="comment">//code1</span></span><br><span class="line">            requestFilterChain.proceed(actionName, request, listener);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">doExecute</span><span class="params">(Request request, ActionListener&lt;Response&gt; listener)</span></span>;</span><br><span class="line">     </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RequestFilterChain</span>&lt;<span class="title">Request</span> <span class="keyword">extends</span> <span class="title">ActionRequest</span>, <span class="title">Response</span> <span class="keyword">extends</span> <span class="title">ActionResponse</span>&gt; <span class="keyword">implements</span> <span class="title">ActionFilterChain</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> TransportAction&lt;Request, Response&gt; action;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger index = <span class="keyword">new</span> AtomicInteger();</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> ESLogger logger;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="title">RequestFilterChain</span><span class="params">(TransportAction&lt;Request, Response&gt; action, ESLogger logger)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.action = action;</span><br><span class="line">            <span class="keyword">this</span>.logger = logger;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span> <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">proceed</span><span class="params">(String actionName, ActionRequest request, ActionListener listener)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> i = index.getAndIncrement();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (i &lt; <span class="keyword">this</span>.action.filters.length) &#123;</span><br><span class="line">                    <span class="keyword">this</span>.action.filters[i].apply(actionName, request, listener, <span class="keyword">this</span>); <span class="comment">//code2</span></span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (i == <span class="keyword">this</span>.action.filters.length) &#123;</span><br><span class="line">                    <span class="keyword">this</span>.action.doExecute((Request) request, <span class="keyword">new</span> FilteredActionListener&lt;Response&gt;(actionName, listener, <span class="keyword">new</span> ResponseFilterChain(<span class="keyword">this</span>.action.filters, logger))); <span class="comment">//code4</span></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    listener.onFailure(<span class="keyword">new</span> IllegalStateException(<span class="string">"proceed was called too many times"</span>));<span class="comment">//code3</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span>(Throwable t) &#123;</span><br><span class="line">                logger.trace(<span class="string">"Error during transport action execution."</span>, t);</span><br><span class="line">                listener.onFailure(t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">proceed</span><span class="params">(String action, ActionResponse response, ActionListener listener)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">assert</span> <span class="keyword">false</span> : <span class="string">"request filter chain should never be called on the response side"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseFilterChain</span> <span class="keyword">implements</span> <span class="title">ActionFilterChain</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> ActionFilter[] filters;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger index;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> ESLogger logger;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="title">ResponseFilterChain</span><span class="params">(ActionFilter[] filters, ESLogger logger)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.filters = filters;</span><br><span class="line">            <span class="keyword">this</span>.index = <span class="keyword">new</span> AtomicInteger(filters.length);</span><br><span class="line">            <span class="keyword">this</span>.logger = logger;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">proceed</span><span class="params">(String action, ActionRequest request, ActionListener listener)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">assert</span> <span class="keyword">false</span> : <span class="string">"response filter chain should never be called on the request side"</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span> <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">proceed</span><span class="params">(String action, ActionResponse response, ActionListener listener)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">int</span> i = index.decrementAndGet();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (i &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">                    filters[i].apply(action, response, listener, <span class="keyword">this</span>);<span class="comment">//code5</span></span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (i == -<span class="number">1</span>) &#123;</span><br><span class="line">                    listener.onResponse(response);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    listener.onFailure(<span class="keyword">new</span> IllegalStateException(<span class="string">"proceed was called too many times"</span>));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">                logger.trace(<span class="string">"Error during transport action execution."</span>, t);</span><br><span class="line">                listener.onFailure(t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">FilteredActionListener</span>&lt;<span class="title">Response</span> <span class="keyword">extends</span> <span class="title">ActionResponse</span>&gt; <span class="keyword">implements</span> <span class="title">ActionListener</span>&lt;<span class="title">Response</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> String actionName;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> ActionListener listener;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> ResponseFilterChain chain;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="title">FilteredActionListener</span><span class="params">(String actionName, ActionListener listener, ResponseFilterChain chain)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.actionName = actionName;</span><br><span class="line">            <span class="keyword">this</span>.listener = listener;</span><br><span class="line">            <span class="keyword">this</span>.chain = chain;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Response response)</span> </span>&#123;</span><br><span class="line">            chain.proceed(actionName, response, listener);<span class="comment">//code6</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Throwable e)</span> </span>&#123;</span><br><span class="line">            listener.onFailure(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>注释:</p>
+<ul>
+<li><p>code1 对所有request进行filter。(通过对加载的filter开启内部计数器的方式)</p>
+</li>
+<li><p>code2 执行真正的request方法。</p>
+</li>
+<li><p>code3 这里个人感觉就是一个异常逻辑，通常应该不会执行到。</p>
+</li>
+<li><p>code4 request真正执行业务的同时会注册response的回调监听,在请求完成时会触发code6</p>
+</li>
+<li><p>code6进而执行code5(es rpc是通过异步回调实现的。ES的RPC详情参见 <a href="https://psiitoy.github.io/2017/08/10/[%E6%BA%90%E7%A0%81]Elasticsearch%E6%BA%90%E7%A0%812(%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6%E4%B9%8BRPC">[源码]Elasticsearch源码2(通信机制之RPC)</a>))。</p>
+</li>
+<li><p>code5 对所有的response进行filter。同code1</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<blockquote>
+<p>然后我们再看下自定义插件类<code>ActionMonitorPlugin</code></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ActionMonitorPlugin</span> <span class="keyword">extends</span> <span class="title">Plugin</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ESLogger log = Loggers.getLogger(ActionMonitorPlugin.class);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ActionMonitorPlugin</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        log.info(<span class="string">"Starting Action Monitor Plugin"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onModule</span><span class="params">(ActionModule <span class="keyword">module</span>)</span> </span>&#123; <span class="comment">//code 1 插件初始化</span></span><br><span class="line">        <span class="keyword">module</span>.registerFilter(ActionMonitorFilter.class);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Collection&lt;Module&gt; <span class="title">nodeModules</span><span class="params">()</span> </span>&#123;  <span class="comment">//code 2  插件模块注入</span></span><br><span class="line">        <span class="keyword">return</span> Collections.&lt;Module&gt;singletonList(<span class="keyword">new</span> ActionMonitorModule());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">description</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"description"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">name</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"ActionMonitor"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>code1</code> 插件初始化的源码分析(通过<code>PluginsService</code>进行初始化)</li>
+</ul>
+<blockquote>
+<p>以下截图为<code>PluginsService</code>中如何把自定义<code>Plugin</code>的<code>onModule</code>方法引用注入容器并在相应作用域启动时加载(<code>processModule()</code>)。<br>加载作用域包括<code>Node</code>,<code>Index</code>,<code>Indices</code>。</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin1.png" alt="图 plugin1"></p>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin2.png" alt="图 plugin2"></p>
+<ul>
+<li>只要把Filter注册到ActionModule，ActionModule便会将在Node启动时加载到容器中，我们再回忆下Node加载的源码 </li>
+</ul>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-plugin4.png" alt="图 plugin4"></p>
+<ul>
+<li>ActionModule的变量actionFilters中，就是我们此次开发的Filter集合</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ActionModule</span> <span class="keyword">extends</span> <span class="title">AbstractModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, ActionEntry&gt; actions = Maps.newHashMap();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;Class&lt;? extends ActionFilter&gt;&gt; actionFilters = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> ActionModule <span class="title">registerFilter</span><span class="params">(Class&lt;? extends ActionFilter&gt; actionFilter)</span> </span>&#123;</span><br><span class="line">        actionFilters.add(actionFilter);  <span class="comment">//code5</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;    </span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="comment">//略...</span></span><br><span class="line">            Multibinder&lt;ActionFilter&gt; actionFilterMultibinder = Multibinder.newSetBinder(binder(), ActionFilter.class);</span><br><span class="line">            <span class="keyword">for</span> (Class&lt;? extends ActionFilter&gt; actionFilter : actionFilters) &#123;</span><br><span class="line">                actionFilterMultibinder.addBinding().to(actionFilter); <span class="comment">//code3</span></span><br><span class="line">            &#125;</span><br><span class="line">            bind(ActionFilters.class).asEagerSingleton(); <span class="comment">//code4</span></span><br><span class="line">            <span class="comment">//略...</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ActionFilters</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ActionFilter[] filters;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Inject</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ActionFilters</span><span class="params">(Set&lt;ActionFilter&gt; actionFilters)</span> </span>&#123;  <span class="comment">//code6</span></span><br><span class="line">        <span class="keyword">this</span>.filters = actionFilters.toArray(<span class="keyword">new</span> ActionFilter[actionFilters.size()]);</span><br><span class="line">        Arrays.sort(filters, <span class="keyword">new</span> Comparator&lt;ActionFilter&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compare</span><span class="params">(ActionFilter o1, ActionFilter o2)</span> </span>&#123;</span><br><span class="line">                <span class="keyword">return</span> Integer.compare(o1.order(), o2.order());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns the action filters that have been injected</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> ActionFilter[] filters() &#123;</span><br><span class="line">        <span class="keyword">return</span> filters;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>注:</p>
+<ul>
+<li><p><code>code2</code> 把我们开发的这一个<code>ActionMonitor</code>插件注入容器。 </p>
+</li>
+<li><p><code>code3</code> 把插件集合封装到一个Set中，对应的<code>code6</code>中<code>ActionFilters</code>的构造注入。</p>
+</li>
+<li><p><code>code4</code>，<code>ActionFilters</code>把全部filter类型的插件注入容器，单例。</p>
+</li>
+<li><p><code>TransportAction</code>的构造直接使用ActionFilters注入filters<a href="`this.filters = actionFilters.filters("></a>`)</p>
+</li>
+<li><p><code>code5</code> 我们自己开发的插件需要显示的注册到ActionModule的actionFilters中去。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-4-ES是如何扩展现有模块的？"><a href="#2-4-ES是如何扩展现有模块的？" class="headerlink" title="2.4 ES是如何扩展现有模块的？"></a>2.4 ES是如何扩展现有模块的？</h3><blockquote>
+<p>上一节我们分析了Filter类型的插件如何初始化和如何注入容器。那么ES核心包除了ActionModule之外还有什么模块可以扩展呢？</p>
+</blockquote>
+<p>1) 可扩展的模块，一般都提供了 addXXX，registerXXX 等方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//智能提示</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onModule</span><span class="params">(SuggestModule suggestModule)</span> </span>&#123;</span><br><span class="line">    suggestModule.registerSuggester(MySuggester.class);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//REST</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onModule</span><span class="params">(RestModule restModule)</span> </span>&#123;</span><br><span class="line">    restModule.addRestAction(MyRestAction.class);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//高亮</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onModule</span><span class="params">(HighlightModule highlightModule)</span> </span>&#123;</span><br><span class="line">    highlightModule.registerHighlighter(MyHighlighter.class);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2) 可替换的模块，一般是实现了SpawnModules接口的模块，比如DiscoveryModule</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="keyword">public</span> Iterable&lt;? extends Module&gt; spawnModules() &#123;</span><br><span class="line">    Class&lt;? extends Module&gt; defaultDiscoveryModule;</span><br><span class="line">    <span class="keyword">if</span> (settings.getAsBoolean(<span class="string">"node.local"</span>, <span class="keyword">false</span>)) &#123;</span><br><span class="line">        defaultDiscoveryModule = LocalDiscoveryModule.class;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        defaultDiscoveryModule = ZenDiscoveryModule.class;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ImmutableList.of(Modules.createModule(settings.getAsClass(<span class="string">"discovery.type"</span>, defaultDiscoveryModule, <span class="string">"org.elasticsearch.discovery."</span>, <span class="string">"DiscoveryModule"</span>), settings));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>根据配置项<code>discovery.type</code>来确定加载那个模块，</p>
+</li>
+<li><p>不可以扩展或替换的组件，比如<code>Internal</code>开头的组件，<code>InternalClusterService</code>，<code>InternalIndicesService</code>等是不可以替换的。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/es/" rel="tag">#es</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/12/[源码]Elasticsearch源码4(选举机制)/" rel="next" title="[源码]Elasticsearch源码4(选举机制)">
+                <i class="fa fa-chevron-left"></i> [源码]Elasticsearch源码4(选举机制)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/17/[源码]Elasticsearch源码6(5.4插件开发)/" rel="prev" title="[源码]Elasticsearch源码6(5.4插件开发)">
+                [源码]Elasticsearch源码6(5.4插件开发) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、前言"><span class="nav-text">一、前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-什么是ES插件"><span class="nav-text">1.1 什么是ES插件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-插件调试与DEBUG"><span class="nav-text">1.2 插件调试与DEBUG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-举两个自己开发的Plugin例子"><span class="nav-text">1.3 举两个自己开发的Plugin例子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、ES插件开发与es核心包插件模块源码分析"><span class="nav-text">二、ES插件开发与es核心包插件模块源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-自定义插件模块结构"><span class="nav-text">2.1 自定义插件模块结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-es核心包插件模块结构"><span class="nav-text">2.2 es核心包插件模块结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-开发一个Filter类型的插件。（如日志，监控等）"><span class="nav-text">2.3 开发一个Filter类型的插件。（如日志，监控等）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-ES是如何扩展现有模块的？"><span class="nav-text">2.4 ES是如何扩展现有模块的？</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,752 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="库存模型,分布式事务,分布式,电商," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文讨论内容不包含秒杀，仅仅是最普遍的库存模型而已，重点讨论如何避免超卖，少卖。">
+<meta name="keywords" content="库存模型,分布式事务,分布式,电商">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[分享]浅谈电商库存模型">
+<meta property="og:url" content="https://psiitoy.github.io/2017/03/21/[分享]浅谈电商库存模型/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="本文讨论内容不包含秒杀，仅仅是最普遍的库存模型而已，重点讨论如何避免超卖，少卖。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/kucun/msg2pc.png">
+<meta property="og:updated_time" content="2018-02-01T02:52:59.143Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[分享]浅谈电商库存模型">
+<meta name="twitter:description" content="本文讨论内容不包含秒杀，仅仅是最普遍的库存模型而已，重点讨论如何避免超卖，少卖。">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/kucun/msg2pc.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/03/21/[分享]浅谈电商库存模型/"/>
+
+  <title> [分享]浅谈电商库存模型 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [分享]浅谈电商库存模型
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-21T11:15:06+08:00" content="2017-03-21">
+              2017-03-21
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/分享/" itemprop="url" rel="index">
+                    <span itemprop="name">分享</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/03/21/[分享]浅谈电商库存模型/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/03/21/[分享]浅谈电商库存模型/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文讨论内容不包含秒杀，仅仅是最普遍的库存模型而已，重点讨论如何避免<code>超卖</code>，<code>少卖</code>。</p>
+<a id="more"></a>
+<hr>
+<h2 id="1、-基本概念"><a href="#1、-基本概念" class="headerlink" title="1、 基本概念"></a>1、 基本概念</h2><h3 id="1-1-超卖"><a href="#1-1-超卖" class="headerlink" title="1.1 超卖"></a>1.1 超卖</h3><blockquote>
+<p>实际库存已经为0,但是依旧卖出去了。可能导致商家无货可发。</p>
+</blockquote>
+<h3 id="1-2-少卖"><a href="#1-2-少卖" class="headerlink" title="1.2 少卖"></a>1.2 少卖</h3><blockquote>
+<p>明明有货，但是库存被锁定，导致商家货卖不出去。</p>
+</blockquote>
+<hr>
+<h2 id="2、-分布式事务简述"><a href="#2、-分布式事务简述" class="headerlink" title="2、 分布式事务简述"></a>2、 分布式事务简述</h2><h3 id="2-1-消息事务-最终一致性"><a href="#2-1-消息事务-最终一致性" class="headerlink" title="2.1 消息事务+最终一致性"></a>2.1 消息事务+最终一致性</h3><blockquote>
+<p>所谓的消息事务就是基于消息中间件的两阶段提交，本质上是对消息中间件的一种特殊利用，<br>它是将本地事务和发消息放在了一个分布式事务里，保证要么本地操作成功成功并且对外发消息成功，<br>要么两者都失败，开源的RocketMQ就支持这一特性，具体原理如下：</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/kucun/msg2pc.png" alt="图 fenzu"></p>
+<ul>
+<li>1、A系统向消息中间件发送一条预备消息</li>
+<li>2、消息中间件保存预备消息并返回成功</li>
+<li>3、A执行本地事务</li>
+<li>4、A发送提交消息给消息中间件</li>
+</ul>
+<blockquote>
+<p>通过以上4步完成了一个消息事务。对于以上的4个步骤，每个步骤都可能产生错误，下面一一分析：</p>
+</blockquote>
+<ul>
+<li>步骤一出错，则整个事务失败，不会执行A的本地操作</li>
+<li>步骤二出错，则整个事务失败，不会执行A的本地操作</li>
+<li>步骤三出错，这时候需要回滚预备消息，怎么回滚？答案是A系统实现一个消息中间件的回调接口，消息中间件会去不断执行回调接口，检查A事务执行是否执行成功，如果失败则回滚预备消息</li>
+<li>步骤四出错，这时候A的本地事务是成功的，那么消息中间件要回滚A吗？答案是不需要，其实通过回调接口，消息中间件能够检查到A执行成功了，这时候其实不需要A发提交消息了，消息中间件可以自己对消息进行提交，从而完成整个消息事务</li>
+</ul>
+<h3 id="2-2-TCC编程模式"><a href="#2-2-TCC编程模式" class="headerlink" title="2.2 TCC编程模式"></a>2.2 TCC编程模式</h3><blockquote>
+<p>所谓的TCC编程模式，也是两阶段提交的一个变种。TCC提供了一个编程框架，将整个业务逻辑分为三块：Try、Confirm和Cancel三个操作。<br>以在线下单为例，Try阶段会去扣库存，Confirm阶段则是去更新订单状态，如果更新订单失败，则进入Cancel阶段，会去恢复库存。<br>总之，TCC就是通过代码人为实现了两阶段提交，不同的业务场景所写的代码都不一样，复杂度也不一样，因此，这种模式并不能很好地被复用。</p>
+</blockquote>
+<hr>
+<h2 id="3、-库存模型"><a href="#3、-库存模型" class="headerlink" title="3、 库存模型"></a>3、 库存模型</h2><ul>
+<li>1.下单的时候每个订单都会有预占库存。</li>
+<li>2.订单出库或取消解锁预占。</li>
+<li>3.可售库存 = 现货库存 - 预占库存</li>
+</ul>
+<p>具体下单操作流程是</p>
+<p>下单 –&gt; 预占(预占库存+1) –&gt; 支付 –&gt; 出库(释放预占并减库存，涉及到分布式事务) –&gt; 完成</p>
+<p>重点讨论此方案的意义，跟出库部分。</p>
+<h3 id="3-1-为什么设计成预占库存？"><a href="#3-1-为什么设计成预占库存？" class="headerlink" title="3.1 为什么设计成预占库存？"></a>3.1 为什么设计成预占库存？</h3><blockquote>
+<p>以下均为个人理解</p>
+</blockquote>
+<ul>
+<li>1.库存和下单分离，下单了不会实际减少库存。真正的实物库存跟逻辑库存分离，方便(盘库、补货等)<code>仅仅用实物库存</code>的场景跟<code>高并发</code>的场景(下单)分离。</li>
+<li>2.预占可以减少库存表的操作频率，减库存可以在发货的时候统一处理。(操作多次预占表后仅在必要时操作一次库存表，跟1有共通之处)</li>
+</ul>
+<h3 id="3-2-预占库存怎么加？"><a href="#3-2-预占库存怎么加？" class="headerlink" title="3.2 预占库存怎么加？"></a>3.2 预占库存怎么加？</h3><ul>
+<li>1.可以用mysql乐观锁(version递增避免aba)</li>
+<li>2.可以用redis watch(同样基于cas，无aba)</li>
+</ul>
+<h3 id="3-3-出库部分怎么保证事务？"><a href="#3-3-出库部分怎么保证事务？" class="headerlink" title="3.3 出库部分怎么保证事务？"></a>3.3 出库部分怎么保证事务？</h3><ul>
+<li><p>1.先出库还是先释放预占？</p>
+<blockquote>
+<p>为了避免超卖选择先减库存，再释放预占。</p>
+</blockquote>
+</li>
+<li><p>2.如何保证事务一致性？</p>
+<blockquote>
+<p>采用消息机制的2pc保证分布式事务。</p>
+</blockquote>
+</li>
+</ul>
+<hr>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/库存模型/" rel="tag">#库存模型</a>
+          
+            <a href="/tags/分布式事务/" rel="tag">#分布式事务</a>
+          
+            <a href="/tags/分布式/" rel="tag">#分布式</a>
+          
+            <a href="/tags/电商/" rel="tag">#电商</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/25/[案例]如何异构一个数十亿级别的数据库/" rel="next" title="[案例]如何异构一个数十亿级别的数据库">
+                <i class="fa fa-chevron-left"></i> [案例]如何异构一个数十亿级别的数据库
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/22/[分享]浅谈分布式数据库/" rel="prev" title="[分享]浅谈分布式数据库">
+                [分享]浅谈分布式数据库 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、-基本概念"><span class="nav-text">1、 基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-超卖"><span class="nav-text">1.1 超卖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-少卖"><span class="nav-text">1.2 少卖</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、-分布式事务简述"><span class="nav-text">2、 分布式事务简述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-消息事务-最终一致性"><span class="nav-text">2.1 消息事务+最终一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-TCC编程模式"><span class="nav-text">2.2 TCC编程模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、-库存模型"><span class="nav-text">3、 库存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-为什么设计成预占库存？"><span class="nav-text">3.1 为什么设计成预占库存？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-预占库存怎么加？"><span class="nav-text">3.2 预占库存怎么加？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-出库部分怎么保证事务？"><span class="nav-text">3.3 出库部分怎么保证事务？</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

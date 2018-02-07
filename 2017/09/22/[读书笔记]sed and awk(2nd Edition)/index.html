@@ -1,0 +1,1424 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="sed,awk," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="[读书笔记]《sed and awk(2nd Edition)》">
+<meta name="keywords" content="sed,awk">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[读书笔记]sed and awk(2nd Edition)">
+<meta property="og:url" content="https://psiitoy.github.io/2017/09/22/[读书笔记]sed and awk(2nd Edition)/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="[读书笔记]《sed and awk(2nd Edition)》">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/book/sedandawk/sedandawk2nd.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/book/sedandawk/yuanzifuhuizong.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/book/sedandawk/kuozhandeyuanzifu.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/book/sedandawk/teshuzifu.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/book/sedandawk/yyzz1.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.134Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[读书笔记]sed and awk(2nd Edition)">
+<meta name="twitter:description" content="[读书笔记]《sed and awk(2nd Edition)》">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/book/sedandawk/sedandawk2nd.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/09/22/[读书笔记]sed and awk(2nd Edition)/"/>
+
+  <title> [读书笔记]sed and awk(2nd Edition) | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [读书笔记]sed and awk(2nd Edition)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-09-22T23:15:06+08:00" content="2017-09-22">
+              2017-09-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/读书笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">读书笔记</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/09/22/[读书笔记]sed and awk(2nd Edition)/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/09/22/[读书笔记]sed and awk(2nd Edition)/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[读书笔记]《sed and awk(2nd Edition)》<br><img src="https://psiitoy.github.io/img/book/sedandawk/sedandawk2nd.png" alt="图 sedandawk2nd"></p>
+<a id="more"></a>
+<h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><blockquote>
+<p>Linux文本处理三剑客<code>grep</code>，<code>sed</code>，<code>awk</code></p>
+</blockquote>
+<h3 id="1-1-grep"><a href="#1-1-grep" class="headerlink" title="1.1 grep"></a>1.1 grep</h3><h4 id="1-基本语法"><a href="#1-基本语法" class="headerlink" title="1. 基本语法"></a>1. 基本语法</h4><ul>
+<li>grep [-acinv] [–color=auto] ‘搜寻字符串’ filename</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-a ：将 binary 文件以 text 文件的方式搜寻数据</span><br><span class="line">-c ：计算找到 &apos;搜寻字符串&apos; 的次数</span><br><span class="line">-i ：忽略大小写的不同，所以大小写视为相同</span><br><span class="line">-n ：顺便输出行号</span><br><span class="line">-v ：反向选择，亦即显示出没有 &apos;搜寻字符串&apos; 内容的那一行！</span><br><span class="line">--color=auto ：可以将找到的关键词部分加上颜色的显示喔！</span><br></pre></td></tr></table></figure>
+<h4 id="2-常用场景"><a href="#2-常用场景" class="headerlink" title="2. 常用场景"></a>2. 常用场景</h4><blockquote>
+<p>过滤</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l | grep -name</span><br><span class="line">$ cat test.txt | grep -v 123</span><br></pre></td></tr></table></figure>
+<h3 id="1-2-sed"><a href="#1-2-sed" class="headerlink" title="1.2 sed"></a>1.2 sed</h3><h4 id="1-基本语法-1"><a href="#1-基本语法-1" class="headerlink" title="1. 基本语法"></a>1. 基本语法</h4><ul>
+<li>sed [options] script filename</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-n ：只打印模式匹配的行</span><br><span class="line"></span><br><span class="line">-e ：多脚本运行，多点编辑,例如 -e script1 -e script2 -e script3</span><br><span class="line"></span><br><span class="line">-f ：将sed的动作写在一个文件内，用–f filename 执行filename内的sed动作</span><br><span class="line"></span><br><span class="line">-r ：支持扩展表达式</span><br><span class="line"></span><br><span class="line">-i ：直接修改文件内容</span><br></pre></td></tr></table></figure>
+<h4 id="2-常用场景-1"><a href="#2-常用场景-1" class="headerlink" title="2. 常用场景"></a>2. 常用场景</h4><blockquote>
+<p>输出，替换，不对源文件改动，把整个文件(或匹配的)输入到屏幕。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 输出文件test.txt的2~5行</span></span><br><span class="line">$ sed -n <span class="string">'2,5p'</span> test.txt</span><br></pre></td></tr></table></figure>
+<h3 id="1-3-awk"><a href="#1-3-awk" class="headerlink" title="1.3 awk"></a>1.3 awk</h3><h4 id="1-基本语法-2"><a href="#1-基本语法-2" class="headerlink" title="1. 基本语法"></a>1. 基本语法</h4><ul>
+<li>awk ‘{pattern + action}’ filenames</li>
+</ul>
+<blockquote>
+<p>有三种方式调用awk</p>
+</blockquote>
+<ul>
+<li>1.命令行方式</li>
+</ul>
+<p>awk [-F  field-separator]  ‘commands’  input-file(s)</p>
+<p>其中，commands 是真正awk命令，[-F域分隔符]是可选的。 input-file(s) 是待处理的文件。<br>在awk中，文件的每一行中，由域分隔符分开的每一项称为一个域。通常，在不指名-F域分隔符的情况下，默认的域分隔符是空格。</p>
+<ul>
+<li>2.shell脚本方式</li>
+</ul>
+<p>将所有的awk命令插入一个文件，并使awk程序可执行，然后awk命令解释器作为脚本的首行，一遍通过键入脚本名称来调用。</p>
+<p>相当于shell脚本首行的：#!/bin/sh<br>可以换成：#!/bin/awk</p>
+<ul>
+<li>3.将所有的awk命令插入一个单独文件，然后调用：</li>
+</ul>
+<p>awk -f awk-script-file input-file(s)<br>其中，-f选项加载awk-script-file中的awk脚本，input-file(s)跟上面的是一样的。</p>
+<h4 id="2-常用场景，脚本处理等，awk-命令可以把文本分隔成若干部分，再通过-print-输出。"><a href="#2-常用场景，脚本处理等，awk-命令可以把文本分隔成若干部分，再通过-print-输出。" class="headerlink" title="2. 常用场景，脚本处理等，awk 命令可以把文本分隔成若干部分，再通过 print 输出。"></a>2. 常用场景，脚本处理等，awk 命令可以把文本分隔成若干部分，再通过 print 输出。</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#输出网卡eth0的IP地址</span></span><br><span class="line">$ ifconfig eth0 | awk -F <span class="string">"[: ]+"</span> <span class="string">'NR==2 &#123;print $4&#125;'</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>-F “[: ]+”<ul>
+<li>-F          // 分隔多列</li>
+<li>“[: ]+”     // 用”:”和” “同时作为分隔符,”+”表示匹配多个</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>第一列</th>
+<th>第二列</th>
+<th>第三列</th>
+<th>第四列</th>
+<th>第五列</th>
+<th>…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空格</td>
+<td>inet</td>
+<td>addr</td>
+<td>192.168.1.2</td>
+<td>Bcast</td>
+<td>…</td>
+</tr>
+</tbody>
+</table>
+<h2 id="二、精华"><a href="#二、精华" class="headerlink" title="二、精华"></a>二、精华</h2><blockquote>
+<p>grep = g/re/p</p>
+</blockquote>
+<ul>
+<li>目前是第一次看此书名，未经提炼。同时因为主要讲的是文本操作，所以以下章练习题为主。</li>
+</ul>
+<h2 id="三、练习题"><a href="#三、练习题" class="headerlink" title="三、练习题"></a>三、练习题</h2><ul>
+<li>本章重点梳理书上的练习题</li>
+</ul>
+<hr>
+<h3 id="3-1-第一章-强大的编译工具"><a href="#3-1-第一章-强大的编译工具" class="headerlink" title="3.1 第一章 强大的编译工具"></a>3.1 第一章 强大的编译工具</h3><blockquote>
+<p>主要是一些场景介绍，略…</p>
+</blockquote>
+<h3 id="3-2-第二章-了解基本操作"><a href="#3-2-第二章-了解基本操作" class="headerlink" title="3.2 第二章 了解基本操作"></a>3.2 第二章 了解基本操作</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">John Daggett, 341 King Road, Plymouth MA</span><br><span class="line">Alice Ford, 22 East Broadway, Richmond VA</span><br><span class="line">Orville Thomas, 11345 Oak Bridge Road, Tulsa OK</span><br><span class="line">Terry Kalkas, 402 Lans Road, Beaver Falls PA</span><br><span class="line">Eric Adams, 20 Post Road, Sudbury MA</span><br><span class="line">Hubert Sims, 328A Brook Road, Roanoke VA</span><br><span class="line">Amy Wilde, 334 Bayshore Pkwy, Mountain View CA</span><br><span class="line">Sal Carpenter, 73 6th Street, Boston MA</span><br></pre></td></tr></table></figure>
+<p>sed [-e] ‘ instruction’ file</p>
+<blockquote>
+<p>下面的例子instruction就是替换操作 ‘ s/xxx/‘ 其中xxx就是 from/to/</p>
+</blockquote>
+<p>替换一个目标<br>sed ‘ s/ MA/, NMB/‘ list</p>
+<p>同时替换多个目标<br>sed ‘ s/ MA/, NMB; s/ PA/, DYD/‘ list</p>
+<blockquote>
+<p>创建sedscr</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat sedscr</span><br><span class="line">s/ MA/, NMB/</span><br><span class="line">s/ PA/, PPA/</span><br><span class="line">s/ CA/, CCA/</span><br></pre></td></tr></table></figure>
+<p>执行脚本文件</p>
+<p>sed -f scriptfile file</p>
+<p>sed -f sedscr list</p>
+<p>重定向输出到文件</p>
+<p>sed -f sedscr list &gt; newlist</p>
+<p><code>-n</code>静默模式(阻止输入行的自动输出，只显示变更起作用的行)</p>
+<p>sed -n -e ‘ s/MA/Massachusetts/p’ list</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">John Daggett, 341 King Road, Plymouth Massachusetts</span><br><span class="line">Eric Adams, 20 Post Road, Sudbury Massachusetts</span><br><span class="line">Sal Carpenter, 73 6th Street, Boston Massachusetts</span><br></pre></td></tr></table></figure>
+<p>选项总结(sed的命令行选项)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">选项</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">-e</td>
+<td style="text-align:left">编辑随后的指令</td>
+</tr>
+<tr>
+<td style="text-align:left">-f</td>
+<td style="text-align:left">跟随脚本中的文件名</td>
+</tr>
+<tr>
+<td style="text-align:left">-n</td>
+<td style="text-align:left">阻止输入行的自动输入</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>awk</p>
+<p>awk ‘ instructions’ files</p>
+<p>脚本调用awk</p>
+<p>awk -f script files</p>
+<blockquote>
+<p>-f 选项的工作方式与在sed中相同</p>
+</blockquote>
+<p>打印每行中的第一个字段</p>
+<p>awk ‘ {print $1 }’ list</p>
+<p>打印匹配的每一行</p>
+<p>awk ‘ /MA/‘ list</p>
+<p>打印匹配的每一行的首字母</p>
+<p>awk ‘ /MA/ {print $1}’ list</p>
+<blockquote>
+<p>如果大声阅读这句话： print the first work of each line containing the string “MA”，将有助于我们理解上面的命令。</p>
+</blockquote>
+<p>使用<code>-F</code>选项将字符分隔符由默认的<code>空格</code>变为<code>逗号</code>。</p>
+<p>awk -F, ‘ /MA/ {print $1}’ list</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">John Daggett</span><br><span class="line">Eric Adams</span><br><span class="line">Sal Carpenter</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>不要将改变字段分隔符的<code>-F</code> 与指定脚本文件名的<code>-f</code>弄混</p>
+</blockquote>
+<p>每个字段打印一行，多重命令由分号隔开。</p>
+<p>awk -F’, ‘ ‘ { print $1; print $2; print $3 }’ list</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">John Daggett</span><br><span class="line">341 King Road</span><br><span class="line">Plymouth MA</span><br><span class="line">Alice Ford</span><br><span class="line">22 East Broadway</span><br><span class="line">Richmond VA</span><br><span class="line">Orville Thomas</span><br><span class="line">11345 Oak Bridge Road</span><br><span class="line">Tulsa OK</span><br><span class="line">Terry Kalkas</span><br><span class="line">402 Lans Road</span><br><span class="line">Beaver Falls PA</span><br><span class="line">Eric Adams</span><br><span class="line">20 Post Road</span><br><span class="line">Sudbury MA</span><br><span class="line">Hubert Sims</span><br><span class="line">328A Brook Road</span><br><span class="line">Roanoke VA</span><br><span class="line">Amy Wilde</span><br><span class="line">334 Bayshore Pkwy</span><br><span class="line">Mountain View CA</span><br><span class="line">Sal Carpenter</span><br><span class="line">73 6th Street</span><br><span class="line">Boston MA</span><br></pre></td></tr></table></figure>
+<p>选项总结(awk的命令行选项)</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">选项</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">-f</td>
+<td style="text-align:left">跟随脚本中的文件名</td>
+</tr>
+<tr>
+<td style="text-align:left">-F</td>
+<td style="text-align:left">改变字段分隔符</td>
+</tr>
+<tr>
+<td style="text-align:left">-v</td>
+<td style="text-align:left">跟随 var=value</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>同时使用sed和awk</p>
+<p>用逗号和州的全名代替邮政编码的sed脚本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cat</span> nameState</span><br><span class="line">s/ CA/, California/</span><br><span class="line">s/ MA/, Massachusetts/</span><br><span class="line">s/ OK/, Oklahoma/</span><br><span class="line">s/ PA/, Pennsylvania/</span><br><span class="line">s/ VA/, Virginia/</span><br></pre></td></tr></table></figure>
+<p>替换州简写，并输送到一个awk程序中，用于提取每条记录的州全名。</p>
+<p>sed -f nameState list | awk -F, ‘ {print $4}’</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Massachusetts</span><br><span class="line">Virginia</span><br><span class="line">Oklahoma</span><br><span class="line">Pennsylvania</span><br><span class="line">Massachusetts</span><br><span class="line">Virginia</span><br><span class="line">California</span><br><span class="line">Massachusetts</span><br></pre></td></tr></table></figure>
+<p>加上<code>| sort | uniq -c</code> 将州名按字母表排序<code>sort</code>，并合并数据<code>uniq</code>统计次数<code>-c</code>。</p>
+<p>sed -f nameState list | awk -F, ‘ {print $4}’ | sort | uniq -c</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1  California</span><br><span class="line">3  Massachusetts</span><br><span class="line">1  Oklahoma</span><br><span class="line">1  Pennsylvania</span><br><span class="line">2  Virginia</span><br></pre></td></tr></table></figure>
+<p>按州的名字排序并列出州的名字，以及住在那个州的人的名字。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/sh</span></span><br><span class="line"><span class="variable">$cat</span> byState</span><br><span class="line">awk -F, <span class="string">' &#123;</span></span><br><span class="line"><span class="string">print $4 ", " $0</span></span><br><span class="line"><span class="string">&#125;'</span> $* |</span><br><span class="line">sort |</span><br><span class="line">awk -F, <span class="string">'</span></span><br><span class="line"><span class="string">$1 == LastState &#123;</span></span><br><span class="line"><span class="string">print "\t" $2</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">$1 != LastState &#123;</span></span><br><span class="line"><span class="string">LastState = $1</span></span><br><span class="line"><span class="string">print $1</span></span><br><span class="line"><span class="string">print "\t" $2</span></span><br><span class="line"><span class="string">&#125;'</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>变量不必赋初始值，awk默认为空字符串</p>
+</blockquote>
+<p>sed -f nameState list | sh byState</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">California</span><br><span class="line">	 Amy Wilde</span><br><span class="line"> Massachusetts</span><br><span class="line">	 Eric Adams</span><br><span class="line">	 John Daggett</span><br><span class="line">	 Sal Carpenter</span><br><span class="line"> Oklahoma</span><br><span class="line">	 Orville Thomas</span><br><span class="line"> Pennsylvania</span><br><span class="line">	 Terry Kalkas</span><br><span class="line"> Virginia</span><br><span class="line">	 Alice Ford</span><br><span class="line">	 Hubert Sims</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="3-3-第三章-了解正则表达式语法"><a href="#3-3-第三章-了解正则表达式语法" class="headerlink" title="3.3 第三章 了解正则表达式语法"></a>3.3 第三章 了解正则表达式语法</h3><p><img src="https://psiitoy.github.io/img/book/sedandawk/yuanzifuhuizong.png" alt="图 yuanzifuhuizong"></p>
+<p><img src="https://psiitoy.github.io/img/book/sedandawk/kuozhandeyuanzifu.png" alt="图 kuozhandeyuanzifu"></p>
+<p>随便测一个grep 查通配符的</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep B.aver list</span><br><span class="line">Terry Kalkas, 402 Lans Road, Beaver Falls PA</span><br></pre></td></tr></table></figure>
+<hr>
+<p>字符类：</p>
+<p>[Ww]hat</p>
+<blockquote>
+<p>匹配 <code>包含</code> “what” 或 “What” 的任意行。因此可以匹配”whatever” 或者 “somewhat”。</p>
+</blockquote>
+<p>.H[12345]</p>
+<blockquote>
+<p>匹配标题宏，如:.H1,.H2,.H3等等。</p>
+</blockquote>
+<p>从一组由章组成的文件中提取标题可能要输入:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ grep <span class="string">' \.H[123]'</span> ch0[12]</span><br><span class="line">ch01:.H1 <span class="string">"Contents ofDistribution tape"</span></span><br><span class="line">ch01:.H1 <span class="string">"Installing the Software"</span></span><br><span class="line">ch01:.H1 <span class="string">"Using the Mouse"</span></span><br><span class="line">ch02:.H1 <span class="string">"Getting Started"</span></span><br><span class="line">ch02:.H1 <span class="string">"A Quick Tour"</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意要用引号引住其中的模式，以便传递给grep而不是由shell解释。</p>
+</blockquote>
+<p>.[!?;:,”.]  .</p>
+<blockquote>
+<p>这个表达式匹配”任意后面有一个感叹号、问号、。。。随后是两个空格和任意一个字符的字符”，注意有三个<code>.</code>，最后一个前面有两个空格。</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/book/sedandawk/teshuzifu.png" alt="图 teshuzifu"></p>
+<p>[a]1]</p>
+<blockquote>
+<p>可以匹配一个a，一个]或一个1,三选一即可。</p>
+</blockquote>
+<p>字符的范围：</p>
+<blockquote>
+<p>连字符<code>-</code>用于指定一个字符范围。</p>
+</blockquote>
+<p>[A-Z]</p>
+<blockquote>
+<p>所有英文大写。</p>
+</blockquote>
+<p>[0-9]</p>
+<blockquote>
+<p>一个数字的数字范围。</p>
+</blockquote>
+<p>[cC]hapter [1-9]</p>
+<blockquote>
+<p>简单例子</p>
+</blockquote>
+<p>[0-9a-z?,.;:’”]</p>
+<blockquote>
+<p>匹配”任意单个字符，可以是数字，小写字母，问号…和引号。”</p>
+</blockquote>
+<p>[a-zA-Z][.?!]</p>
+<blockquote>
+<p>匹配”任意后面跟有句点、问号或者感叹号的小写或大写字母”</p>
+</blockquote>
+<p>匹配日期：</p>
+<ul>
+<li>下面是两种可能的格式<ul>
+<li>MM-DD-YY </li>
+<li>MM/DD/YY</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>下面的正则表达式指示每个字符位置可能的数值范围:</p>
+</blockquote>
+<p>[0-1][0-9][-/][0-3][0-9][-/][0-9][0-9]</p>
+<p>排除字符类：</p>
+<p>[^0-9]</p>
+<blockquote>
+<p>匹配除了数字的所有，如标点符号，除去换行符(awk中换行符也可以被匹配)。</p>
+</blockquote>
+<p>[^aeiou]</p>
+<blockquote>
+<p>排除元音</p>
+</blockquote>
+<p>.DS “[^1]”</p>
+<blockquote>
+<p>避免匹配<code>.DS &quot;1&quot;</code> ，shell中务必添加单引号包围。</p>
+</blockquote>
+<p>POSIX:</p>
+<blockquote>
+<p>略</p>
+</blockquote>
+<p>重复出现的字符：</p>
+<blockquote>
+<p>星号(*)元字符表示它前面的正则表达式可以出现零次或多次。</p>
+</blockquote>
+<p>“<em>hypertext”</em></p>
+<blockquote>
+<p>不管<code>hypertext</code>是否出现在引号中都会被匹配。</p>
+<p>我们看一系列数字：</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">5</span><br><span class="line">10</span><br><span class="line">50</span><br><span class="line">100</span><br><span class="line">500</span><br><span class="line">1000</span><br><span class="line">5000</span><br></pre></td></tr></table></figure>
+<p>[15]0*</p>
+<blockquote>
+<p>匹配所有行。</p>
+</blockquote>
+<p>[15]00*</p>
+<blockquote>
+<p>匹配除前两行以外的所有行。</p>
+</blockquote>
+<p>“.*”</p>
+<blockquote>
+<p>匹配第一个引号和最后一个引号之间的所有字符以及引号。使用<code>&quot;.*&quot;</code>进行匹配的范围总是最大的。</p>
+</blockquote>
+<p>$ grep ‘ &lt;.*&gt;’ sample</p>
+<blockquote>
+<p>以及打印所有带有<code>&lt;&gt;</code>标记的所有行</p>
+<p>加号(+)元字符表示它前面的正则表达式可以出现一次或多次。表达至少一个。</p>
+<p>问号(?)元字符表示它前面的正则表达式可以出现零次或一次。</p>
+</blockquote>
+<p>80[234]?86</p>
+<blockquote>
+<p>匹配”80”后面跟有一个2,一个3,一个4,或者没有字符，然后跟字符串”86”。</p>
+<p>不要混淆正则表达式中的<code>?</code>和shell中的<code>?</code>通配符。shell中的<code>?</code>表示单个字符，等效于正则表达式中的<code>.</code>。</p>
+</blockquote>
+<p>定位元字符：</p>
+<blockquote>
+<p><code>^</code> 行首 <code>$</code> 行尾</p>
+</blockquote>
+<p>^$</p>
+<blockquote>
+<p>匹配空行</p>
+<p>统计文件中的空行，在grep中使用计数选项-c:</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep -c <span class="string">'^$'</span> ch04</span><br><span class="line">5</span><br></pre></td></tr></table></figure>
+<p>^□*$</p>
+<blockquote>
+<p>匹配空行，即使包含空格。 </p>
+</blockquote>
+<p>^.*$</p>
+<blockquote>
+<p>匹配整个行。</p>
+</blockquote>
+<p>短语：</p>
+<blockquote>
+<p>由于换行是随机的，短语被分成两行，保证匹配短语是困难的。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Almond Joy</span><br><span class="line">Almond$</span><br><span class="line">^Joy</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>模式匹配的程序(例如grep)不能匹配跨两行的字符串。稍后介绍sed时，提供一个方式来解决这个问题。</p>
+</blockquote>
+<p>字符的跨度</p>
+<p>11*0</p>
+<blockquote>
+<p>它将匹配下面的每一行:</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">10</span><br><span class="line">110</span><br><span class="line">111110</span><br><span class="line">11111111111111111111110</span><br></pre></td></tr></table></figure>
+<p>\ {n,m}</p>
+<blockquote>
+<p>n和m是0到255之间的证书。如果只指定{n}本身，那么精确匹配n次出现。如果指定{n,m}，那么匹配出现次数为n和m之间的任意数。</p>
+</blockquote>
+<p>10{2,4}1</p>
+<blockquote>
+<p>匹配”1001”,”10001”,”100001”，但是不匹配”101”或”1000001”。</p>
+<p>北美地区的电话号码正则： </p>
+</blockquote>
+<p>[0-9]{3}-[0-9]{4}</p>
+<blockquote>
+<p>如果使用POSIX之前的awk，大括号不可用只能表现成<code>[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]</code></p>
+</blockquote>
+<p>选择性操作：</p>
+<p>UNIX|LINUX</p>
+<blockquote>
+<p>匹配包含”UNIX”或者”LINUX”的行。</p>
+</blockquote>
+<p>分组操作：</p>
+<blockquote>
+<p>圆括号<code>()</code>用于对正则表达式进行分组并设置优先级</p>
+</blockquote>
+<p>BigOne( Computer)?</p>
+<blockquote>
+<p>匹配”BigOne”或”BigOne Computer”</p>
+<p>匹配有时全拼有时缩写，如下：</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ egrep <span class="string">"Lab(oratoris)?s"</span> mail.list</span><br><span class="line">Bell Laboratories, Lucent Technologies</span><br><span class="line">Bell Labs</span><br></pre></td></tr></table></figure>
+<p>compan(y|ies)</p>
+<blockquote>
+<p>圆括号<code>()</code>和<code>|</code>可以组合来用，如上匹配单复数。</p>
+</blockquote>
+<p>单词是什么？第二部分</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">$ cat bookwords</span><br><span class="line">This file tests <span class="keyword">for</span> book <span class="keyword">in</span> various places, such as</span><br><span class="line"></span><br><span class="line">book at the beginning of a line or</span><br><span class="line"></span><br><span class="line">at the end of a line book</span><br><span class="line"></span><br><span class="line">as well as the plural books and</span><br><span class="line"></span><br><span class="line">handbooks.  Here are some</span><br><span class="line">phrases that use the word <span class="keyword">in</span> different ways:</span><br><span class="line">“book of the year award”</span><br><span class="line">to look <span class="keyword">for</span> a line with the word “book”</span><br><span class="line">A GREAT book!</span><br><span class="line">A great book? No.</span><br><span class="line">told them about (the books) until it</span><br><span class="line">Here are the books that you requested</span><br><span class="line">Yes, it is a good book <span class="keyword">for</span> children</span><br><span class="line">amazing that it was called a “harmful book” when</span><br><span class="line">once you get to the end of the book, you can<span class="string">'t believe</span></span><br><span class="line"><span class="string">A well-written regular expression should</span></span><br><span class="line"><span class="string">avoid matching unrelated words,</span></span><br><span class="line"><span class="string">such as booky (is that a word?)</span></span><br><span class="line"><span class="string">and bookish and</span></span><br><span class="line"><span class="string">bookworm and so on.</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>我们发现有一些空行，还有双引号是全角的，用sed去掉空行，并且替换双引号。</p>
+</blockquote>
+<p>sed -e ‘s/[“”]/“/g’ -e ‘/^$/d’ bookwords &gt; bookwordsbak </p>
+<blockquote>
+<p>我们意图搜索”book”的出现，应该有13行匹配，7行不匹配。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ grep <span class="string">' book.* '</span> bookwords</span><br><span class="line">This file tests <span class="keyword">for</span> book <span class="keyword">in</span> various places, such as</span><br><span class="line">as well as the plural books and</span><br><span class="line">A great book? No.</span><br><span class="line">told them about (the books) until it</span><br><span class="line">Here are the books that you requested</span><br><span class="line">Yes, it is a good book <span class="keyword">for</span> children</span><br><span class="line">amazing that it was called a “harmful book” when</span><br><span class="line">once you get to the end of the book, you can’t believe</span><br><span class="line">such as booky (is that a word?)</span><br><span class="line">and bookish and</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>匹配了我们不想要的”booky”和”bookish”的行，还忽略了开始和结尾处的”book”。</p>
+</blockquote>
+<ul>
+<li>简单说几个点概括<ul>
+<li>使用egrep的<code>|</code>或字符，<code>(^|□)</code>来匹配行开头或空格，<code>($|□)</code>来匹配行结束或空格</li>
+<li>使用<code>[\&quot;[{(]*</code>来代表book之前可以有的前括号。</li>
+<li>使用<code>[]})\&quot;?\!.,;:&#39; s]*</code>来代表book之后可以有的标点以及复数<code>s</code>。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>执行如下命令取得我们想要的结果。注意是用<code>egrep</code>。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ egrep <span class="string">"(^| )[\"[&#123;(]*book[]&#125;)\"?\!.,;:' s]*( |$)"</span> bookwords;</span><br><span class="line">This file tests <span class="keyword">for</span> book <span class="keyword">in</span> various places, such as</span><br><span class="line">book at the beginning of a line or</span><br><span class="line">at the end of a line book</span><br><span class="line">as well as the plural books and</span><br><span class="line"><span class="string">"book of the year award"</span></span><br><span class="line">to look <span class="keyword">for</span> a line with the word <span class="string">"book"</span></span><br><span class="line">A GREAT book!</span><br><span class="line">A great book? No.</span><br><span class="line">told them about (the books) until it</span><br><span class="line">Here are the books that you requested</span><br><span class="line">Yes, it is a good book <span class="keyword">for</span> children</span><br><span class="line">amazing that it was called a <span class="string">"harmful book"</span> when</span><br><span class="line">once you get to the end of the book, you can’t believe</span><br></pre></td></tr></table></figure>
+<hr>
+<blockquote>
+<p>gres部分略</p>
+</blockquote>
+<p>有用的正则表达式</p>
+<p><img src="https://psiitoy.github.io/img/book/sedandawk/yyzz1.png" alt="图 yyzz1"></p>
+<hr>
+<h3 id="3-4-第四章-编写sed脚本"><a href="#3-4-第四章-编写sed脚本" class="headerlink" title="3.4 第四章 编写sed脚本"></a>3.4 第四章 编写sed脚本</h3><p>模式空间</p>
+<ul>
+<li>sed维护一种模式空间，即一个工作区或临时缓冲区，当应用编辑命令时将在哪里存储单个输入行。</li>
+</ul>
+<blockquote>
+<p>意图将”pig”换成”cow”并将”cow”换成”horse”，以下脚本你认为会发生什么</p>
+</blockquote>
+<p>s/pig/cow/g<br>s/cow/horse/g</p>
+<ul>
+<li><p>这个命令最终会导致pig cow 全部都是horse! 原因是<code>模式空间</code>是动态的。</p>
+</li>
+<li><p>如果想达到目的，需要在”pig”换成”cow”之前将”cow”换成”horse”，这就是技巧。</p>
+</li>
+</ul>
+<p>寻址上的全局透视</p>
+<blockquote>
+<p>替换所有”CA”</p>
+</blockquote>
+<p>s/CA/California/g</p>
+<blockquote>
+<p>包含”Sebastopol”的行才替换”CA”</p>
+</blockquote>
+<p>/Sebastopol/s/CA/California/g</p>
+<blockquote>
+<p>我们用list再来练一遍</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sed -n <span class="string">'/King/s/MA/NMB/gp'</span> list</span><br><span class="line">John Daggett, 341 King Road, Plymouth NMB</span><br></pre></td></tr></table></figure>
+<p>关于寻址</p>
+<ul>
+<li>如果没有指定地址，那么命令将应用于每一行。</li>
+<li>如果只有一个地址，那么命令应用于这个地址匹配的任意行。</li>
+<li>如果指定了由逗号分割的两个地址，那么命令应用于匹配第一个地址的第一行到第二个地址的行的所有(包含)。</li>
+<li>如果地址后面有感叹号(!)，那么应用于不匹配该地址的所有行。</li>
+</ul>
+<blockquote>
+<p>删除了所有行，没有输出</p>
+</blockquote>
+<p>d</p>
+<blockquote>
+<p>删除第一行，sed内部维护行数，计数器不会因为输入多个文件而重置。因此不管指定多少个输入文件，只有一个1。</p>
+</blockquote>
+<p>1d</p>
+<blockquote>
+<p>同样，删除最后一行。此<code>$</code>区别于正则表达式</p>
+</blockquote>
+<p>$d</p>
+<ul>
+<li>当正则表达式作为地址作为地址提供时，必须封闭在反斜杠<code>/</code>中。</li>
+</ul>
+<blockquote>
+<p>只删除空行</p>
+</blockquote>
+<p>/^$/d</p>
+<blockquote>
+<p>指定地址范围</p>
+<p>替换”King”到”Roanoke”之间的”MA”</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ sed -n <span class="string">'/King/,/Roanoke/s/MA/NMB/gp'</span> list</span><br><span class="line">John Daggett, 341 King Road, Plymouth NMB</span><br><span class="line">Eric Adams, 20 Post Road, Sudbury NMB</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>删除从第二行到最后一行</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sed <span class="string">'2,$d'</span> list</span><br><span class="line">John Daggett, 341 King Road, Plymouth MA</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>混用行地址和正则地址，删除从第一行到空行的所有行。</p>
+</blockquote>
+<p>1,/^$/d</p>
+<blockquote>
+<p>打印从第二行到最后一行</p>
+</blockquote>
+<p>sed -n ‘2,$ p’ list</p>
+<blockquote>
+<p>跟在地址后面的感叹号会反转匹配。删除除了包含VA的所有行</p>
+</blockquote>
+<p>sed ‘/VA/!d’ list</p>
+<p>分组命令</p>
+<ul>
+<li>sed使用大括号<code>{}</code>将一个地址嵌套在另一个地址中，或者在相同的地址上应用多个命令。</li>
+</ul>
+<blockquote>
+<p>只删除tb1输入块中的空行</p>
+</blockquote>
+<p>/^.TS/,/^.TE/{<br>/^$/d<br>}</p>
+<ul>
+<li>左大括号必须在行末，且右大括号必须独占一行。要确保在大括号后面没有空格。</li>
+</ul>
+<blockquote>
+<p>再练一个，删list中第2 3行的空格。注意要用<code>s</code>替换，不能用<code>d</code>删除整行！</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ sed <span class="string">'2,3&#123;</span></span><br><span class="line"><span class="string">s/ //g</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">'</span> list</span><br><span class="line">John Daggett, 341 King Road, Plymouth MA</span><br><span class="line">AliceFord,22EastBroadway,RichmondVA</span><br><span class="line">OrvilleThomas,11345OakBridgeRoad,TulsaOK</span><br><span class="line">Terry Kalkas, 402 Lans Road, Beaver Falls PA</span><br><span class="line">Eric Adams, 20 Post Road, Sudbury MA</span><br><span class="line">Hubert Sims, 328A Brook Road, Roanoke VA</span><br><span class="line">Amy Wilde, 334 Bayshore Pkwy, Mountain View CA</span><br><span class="line">Sal Carpenter, 73 6th Street, Boston MA</span><br></pre></td></tr></table></figure>
+<p>测试并保存输出</p>
+<ul>
+<li>在前面关于模式空间的讨论中，可以看到sed:<ol>
+<li>生成输入行的备份。</li>
+<li>修改模式空间中的备份。</li>
+<li>将备份输出到标准输出。</li>
+</ol>
+</li>
+</ul>
+<blockquote>
+<p>我们再练习一次，上面练习过得使用脚本处理文件替换字符串的操作，并保存。</p>
+</blockquote>
+<p>sed -f sedscr list &gt; newlist</p>
+<ul>
+<li>不能将输出重定向到输入，否则会改写你的输入并破坏你的数据。</li>
+</ul>
+<blockquote>
+<p>用diff程序指出两个文件之间的区别。</p>
+</blockquote>
+<p>diff list newlist</p>
+<h4 id="tested"><a href="#tested" class="headerlink" title="tested"></a>tested</h4><blockquote>
+<p>shell脚本tested，保存临时文件到前缀为tmp的文件中。并且diff两个文件。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ cat tested </span><br><span class="line"><span class="keyword">for</span> x</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">sed -f sedscr <span class="variable">$x</span> &gt;tmp.<span class="variable">$x</span></span><br><span class="line">diff <span class="variable">$x</span> tmp.<span class="variable">$x</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">$ sh tested list</span><br><span class="line">1c1</span><br><span class="line">&lt; John Daggett, 341 King Road, Plymouth MA</span><br><span class="line">---</span><br><span class="line">&gt; John Daggett, 341 King Road, Plymouth, NMB</span><br><span class="line">4,5c4,5</span><br><span class="line">&lt; Terry Kalkas, 402 Lans Road, Beaver Falls PA</span><br><span class="line">&lt; Eric Adams, 20 Post Road, Sudbury MA</span><br><span class="line">---</span><br><span class="line">&gt; Terry Kalkas, 402 Lans Road, Beaver Falls, PPA</span><br><span class="line">&gt; Eric Adams, 20 Post Road, Sudbury, NMB</span><br><span class="line">7,8c7,8</span><br><span class="line">&lt; Amy Wilde, 334 Bayshore Pkwy, Mountain View CA</span><br><span class="line">&lt; Sal Carpenter, 73 6th Street, Boston MA</span><br><span class="line">---</span><br><span class="line">&gt; Amy Wilde, 334 Bayshore Pkwy, Mountain View, CCA</span><br><span class="line">&gt; Sal Carpenter, 73 6th Street, Boston, NMB</span><br><span class="line">$ ls</span><br><span class="line">awkprogs  bookwords  byState  list  nameState  sedscr  <span class="built_in">test</span>  tested  tmp.list</span><br></pre></td></tr></table></figure>
+<h4 id="runsed"><a href="#runsed" class="headerlink" title="runsed"></a>runsed</h4><blockquote>
+<p>永久改变文件</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">cat awkprogs/runsed </span><br><span class="line"><span class="keyword">for</span> x</span><br><span class="line"><span class="keyword">do</span> </span><br><span class="line"><span class="built_in">echo</span> <span class="string">"editing <span class="variable">$x</span>: \c"</span></span><br><span class="line"><span class="keyword">if</span> <span class="built_in">test</span> <span class="string">"<span class="variable">$x</span>"</span> = sedscr; <span class="keyword">then</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">"not editing sedscript!"</span></span><br><span class="line"><span class="keyword">elif</span> <span class="built_in">test</span> -s <span class="variable">$x</span>; <span class="keyword">then</span></span><br><span class="line">	sed -f sedscr <span class="variable">$x</span> &gt; /tmp/<span class="variable">$x</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">test</span> -s /tmp/<span class="variable">$x</span></span><br><span class="line">	<span class="keyword">then</span></span><br><span class="line">	cmp -s <span class="variable">$x</span> /tmp/<span class="variable">$x</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">"file not changed: \c"</span>; </span><br><span class="line">		cp /tmp/<span class="variable">$x</span> <span class="variable">$x</span>; <span class="built_in">echo</span> <span class="string">"done"</span></span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">"sed produced an empty file."</span></span><br><span class="line">	<span class="keyword">fi</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">"original file is empty"</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"all done"</span></span><br><span class="line"></span><br><span class="line">$ sh runsed list </span><br><span class="line">editing list: <span class="keyword">done</span></span><br><span class="line">all <span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>在用runsed之前应该先用testsed检验这些改变</li>
+</ul>
+<h4 id="sed脚本中的4种类型"><a href="#sed脚本中的4种类型" class="headerlink" title="sed脚本中的4种类型"></a>sed脚本中的4种类型</h4><h5 id="对同一文件的多重编辑"><a href="#对同一文件的多重编辑" class="headerlink" title="对同一文件的多重编辑"></a>对同一文件的多重编辑</h5><ul>
+<li>下面是我们要做的工作<ol>
+<li>使用段落宏(.LP)取代所有空行。 <code>s/^$/.LP/</code></li>
+<li>删除每行的所有的前导空格。</li>
+<li>删除打印机下划线的行，即以”+”开始的行。</li>
+<li>删除添加在两个单词之间的多个空格。</li>
+</ol>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ cat horsefeathers </span><br><span class="line">HORSEFEATHERS SOFTWARE PRODUCT BULLETIN</span><br><span class="line"></span><br><span class="line">DESCRIPTION + ___________</span><br><span class="line"></span><br><span class="line">BigOne Computer offers three software packages from the suite of Horsefeathers software products -- Horsefeathers Business BASIC, BASIC Librarian, and LIDO. These software products can fill your requirements <span class="keyword">for</span> powerful, sophisticated, general-purpose business software providing you with a base <span class="keyword">for</span> software customization or development.</span><br><span class="line"></span><br><span class="line">Horsefeathers BASIC is BASIC optimized <span class="keyword">for</span> use on the BigOne machine with UNIX or MS-DOS operating systems. BASIC Librarian is a full screen program editor, <span class="built_in">which</span> also provides the ability</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>完整脚本如下，通过执行runsed我们改写了原始文件。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ cat sedscr</span><br><span class="line">s/^$/.LP/</span><br><span class="line">/^+ */d</span><br><span class="line">s/^ *//</span><br><span class="line">s/ +/ /g</span><br><span class="line">s/\. */. /g</span><br><span class="line">$ runsed horsefeathers</span><br></pre></td></tr></table></figure>
+<h5 id="改变一组文件"><a href="#改变一组文件" class="headerlink" title="改变一组文件"></a>改变一组文件</h5><p>s/XXX /XXXX/g</p>
+<h5 id="提取宏定义"><a href="#提取宏定义" class="headerlink" title="提取宏定义"></a>提取宏定义</h5><h5 id="生成提纲"><a href="#生成提纲" class="headerlink" title="生成提纲"></a>生成提纲</h5><h5 id="编辑工作转移"><a href="#编辑工作转移" class="headerlink" title="编辑工作转移"></a>编辑工作转移</h5><hr>
+<h3 id="3-5-第五章-基本sed命令"><a href="#3-5-第五章-基本sed命令" class="headerlink" title="3.5 第五章 基本sed命令"></a>3.5 第五章 基本sed命令</h3><ul>
+<li>sed命令由25个命令组成。本章我们介绍4个新的编辑命令:<code>d</code>(删除),<code>a</code>(追加),<code>i</code>(插入)和<code>c</code>(更改)。</li>
+</ul>
+<h4 id="sed-命令的用法"><a href="#sed-命令的用法" class="headerlink" title="sed 命令的用法"></a>sed 命令的用法</h4><blockquote>
+<p>大多数sed命令接受逗号分割的两个地址。</p>
+</blockquote>
+<p>[address]command</p>
+<blockquote>
+<p>有一些只能接受单个行地址。</p>
+</blockquote>
+<p>[line-address]command</p>
+<blockquote>
+<p>用大括号进行分组以使其作用于同一个地址：</p>
+</blockquote>
+<p>address {<br>command1<br>command2<br>command3<br>}</p>
+<h4 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h4><blockquote>
+<p>注释，注释行的第一个字必须是”#”号。</p>
+</blockquote>
+<p>#[n]</p>
+<h4 id="替换"><a href="#替换" class="headerlink" title="替换"></a>替换</h4><p>[address]s/pattern/replacement/flags</p>
+<ul>
+<li>这里flags可以替换的是：<ul>
+<li><code>n</code> 1到512之间的一个数字，表明替换到第几个出现的位置。</li>
+<li><code>g</code> 全局替换。如果没有<code>g</code>只替换第一个。</li>
+<li><code>p</code> 打印模式空间的内容。</li>
+<li><code>W file</code> 将模式空间的内容写到文件file中。不这么用。直接最后追加<code>&gt; file</code>就可以</li>
+<li>Flag可以组合使用，只要有意义。如<code>gp</code>配合(静默模式<code>-n</code>选项)</li>
+</ul>
+</li>
+</ul>
+<h4 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h4><p>/^$/d</p>
+<blockquote>
+<p>注意：不允许在被删除的行上进一步操作</p>
+</blockquote>
+<h4 id="追加、插入和更改"><a href="#追加、插入和更改" class="headerlink" title="追加、插入和更改"></a>追加、插入和更改</h4><ul>
+<li>追加<code>a</code>，插入<code>i</code>,更改<code>c</code><ul>
+<li>提供了交互式编辑器(如vi)中所选的编辑功能。</li>
+<li>不常用，因为它们必须多行来指定。</li>
+<li>追加<code>a</code> 行后加</li>
+<li>插入<code>i</code> 行前加</li>
+<li>更改<code>c</code> 替换</li>
+</ul>
+</li>
+</ul>
+<p>[line-address]a\<br>    test </p>
+<p>[line-address]i\<br>    test</p>
+<p>[line-address]c\<br>    test        </p>
+<h4 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h4><blockquote>
+<p>用<code>:l</code> 检测不可见字符</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sed -n -e <span class="string">"l"</span> <span class="built_in">test</span>/spchar</span><br></pre></td></tr></table></figure>
+<h4 id="转换"><a href="#转换" class="headerlink" title="转换"></a>转换</h4><blockquote>
+<p>用大写替换所有小写</p>
+</blockquote>
+<p>y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/</p>
+<h4 id="打印"><a href="#打印" class="headerlink" title="打印"></a>打印</h4><h4 id="打印行号"><a href="#打印行号" class="headerlink" title="打印行号"></a>打印行号</h4><p>[line-address]=</p>
+<h3 id="3-6-第六章-高级sed命令"><a href="#3-6-第六章-高级sed命令" class="headerlink" title="3.6 第六章 高级sed命令"></a>3.6 第六章 高级sed命令</h3><blockquote>
+<p>后面章节 … 略</p>
+</blockquote>
+<h3 id="3-7-第七章-编写AWK脚本"><a href="#3-7-第七章-编写AWK脚本" class="headerlink" title="3.7 第七章 编写AWK脚本"></a>3.7 第七章 编写AWK脚本</h3><blockquote>
+<p>等待输入，每输入一行打印一次，EOF退出（大多数系统CTRL-D）</p>
+</blockquote>
+<p>awk ‘ { print “Hello,world”}’</p>
+<blockquote>
+<p><code>BEGIN</code>模式用于指定第一个输入行之前要执行的动作。</p>
+</blockquote>
+<p>awk ‘ BEGIN { print “Hello,world”}’</p>
+<blockquote>
+<p>如果输入为空，那么打印”This is a blankline.”</p>
+</blockquote>
+<p>awk ‘/^$/ { print “This is a blankline.” }’</p>
+<blockquote>
+<p>同理</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cat awkscr </span><br><span class="line">/[0-9]+/ &#123; <span class="built_in">print</span> <span class="string">"That is an integer"</span>&#125;</span><br><span class="line">/[A-Za-z]+/ &#123; <span class="built_in">print</span> <span class="string">"This is a sting"</span>&#125;</span><br><span class="line">/^$/ &#123; <span class="built_in">print</span> <span class="string">"This is a blankline."</span> &#125;</span><br><span class="line">$ awk -f awkscr</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在程序的任何地方都不能用单引号，否则shell将对它解释而导致错误。</p>
+</blockquote>
+<h4 id="注释-1"><a href="#注释-1" class="headerlink" title="注释"></a>注释</h4><blockquote>
+<p>awk注释以<code>#</code>开头，<code>换行符</code>结尾。可以在任意地方，不必从行首开始。</p>
+</blockquote>
+<h4 id="字段和引用的分离"><a href="#字段和引用的分离" class="headerlink" title="字段和引用的分离"></a>字段和引用的分离</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> John Robinson 666-555-1111 &gt; names</span><br><span class="line">$ awk <span class="string">' &#123;print $2,$1,$3&#125;'</span> names</span><br><span class="line">Robinson John 666-555-1111</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>-F</code>改变分隔符</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ awk -F<span class="string">"-"</span> <span class="string">' &#123;print $2&#125;'</span> names</span><br><span class="line">555</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>打印</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cat names </span><br><span class="line">John Robinson, Koren Inc.,978 4th Ave.,Boston,MA 01760,696-0987</span><br><span class="line">Phyllis Chapman, GVE Corp.,34 Sea Drive, Amesbury,MA 01881,879-0900</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ cat blocklist.awk</span><br><span class="line">&#123;<span class="built_in">print</span> <span class="string">""</span> <span class="comment"># output blank line</span></span><br><span class="line"><span class="built_in">print</span> <span class="variable">$1</span></span><br><span class="line"><span class="built_in">print</span> <span class="variable">$2</span></span><br><span class="line"><span class="built_in">print</span> <span class="variable">$3</span></span><br><span class="line"><span class="built_in">print</span> <span class="variable">$4</span>,<span class="variable">$5</span></span><br><span class="line">&#125;</span><br><span class="line">$ awk -F, -f blocklist.awk names</span><br><span class="line">John Robinson</span><br><span class="line"> Koren Inc.</span><br><span class="line">978 4th Ave.</span><br><span class="line">Boston MA 01760</span><br><span class="line"></span><br><span class="line">Phyllis Chapman</span><br><span class="line"> GVE Corp.</span><br><span class="line">34 Sea Drive</span><br><span class="line"> Amesbury MA 01881</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>用<code>BEGIN {FS=&quot;,&quot;}</code> 来改变分隔符</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ cat phonelist.awk </span><br><span class="line"><span class="comment">#</span></span><br><span class="line">BEGIN &#123; FS=<span class="string">","</span>&#125;</span><br><span class="line">&#123;<span class="built_in">print</span> <span class="variable">$1</span> <span class="string">", "</span> <span class="variable">$6</span>&#125;</span><br><span class="line">$ awk -f phonelist.awk names</span><br><span class="line">John Robinson, 696-0987</span><br><span class="line">Phyllis Chapman, 879-0900</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>查找马塞诸塞州的。使用<code>~</code>来匹配正则，如下</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk -F<span class="string">","</span> <span class="string">'$5 ~ /MA/ &#123;print $1 ", " $6&#125;'</span> names</span><br><span class="line">John Robinson, 696-0987</span><br><span class="line">Phyllis Chapman, 879-0900</span><br></pre></td></tr></table></figure>
+<p>指定多个字段分隔符</p>
+<blockquote>
+<p>每个制表符</p>
+</blockquote>
+<p>FS = “\t”   //code1</p>
+<blockquote>
+<p>一个或多个制表符</p>
+</blockquote>
+<p>FS = “\t+”  //code2</p>
+<blockquote>
+<p>abc\t\tdef code1能分为3个字段，而code2只能分为2个字段</p>
+<p>3个字符之一都可以被解释为分隔符</p>
+</blockquote>
+<p>FS = “[‘:\t]”</p>
+<h4 id="表达式"><a href="#表达式" class="headerlink" title="表达式"></a>表达式</h4><h4 id="打印空行数"><a href="#打印空行数" class="headerlink" title="打印空行数"></a>打印空行数</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 统计空行数</span></span><br><span class="line">/^$/ &#123;</span><br><span class="line"><span class="built_in">print</span> ++x</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>最后打印<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#</span></span><br><span class="line">++x</span><br><span class="line">&#125;</span><br><span class="line">END&#123;</span><br><span class="line"><span class="built_in">print</span> x</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h4 id="计算学生的平均成绩"><a href="#计算学生的平均成绩" class="headerlink" title="计算学生的平均成绩"></a>计算学生的平均成绩</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 求5个成绩的平均值</span></span><br><span class="line">&#123;total = <span class="variable">$2</span> + <span class="variable">$3</span> + <span class="variable">$4</span> + <span class="variable">$5</span> + <span class="variable">$6</span></span><br><span class="line">avg = total /5</span><br><span class="line"><span class="built_in">print</span> <span class="variable">$1</span>, avg&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="系统变量"><a href="#系统变量" class="headerlink" title="系统变量"></a>系统变量</h4><blockquote>
+<p>将上面求平均成绩的语句改写，加上<code>NR</code>，print NR “.”,$1,avg</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ awk <span class="string">'&#123; total = $2 + $3 + $4 + $5 + $6</span></span><br><span class="line"><span class="string">avg = total /5</span></span><br><span class="line"><span class="string">print NR, $1, avg&#125;'</span> stus</span><br><span class="line">1 john 87.4</span><br><span class="line">2 andrea 86</span><br><span class="line">3 jasper 85.6</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>统计输入记录的个数<code>NR</code>，在<code>END</code>生成报告。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ cat phonelist.awk         </span><br><span class="line"><span class="comment">#</span></span><br><span class="line">BEGIN &#123; FS=<span class="string">",*"</span>&#125;</span><br><span class="line">&#123;<span class="built_in">print</span> <span class="variable">$1</span> <span class="string">", "</span> <span class="variable">$6</span>&#125;</span><br><span class="line">END &#123;<span class="built_in">print</span> <span class="string">""</span></span><br><span class="line"><span class="built_in">print</span> NR, <span class="string">"crcords processed."</span>&#125;</span><br><span class="line">$ awk -f phonelist.awk names</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当在<code>print</code>语句中使用逗号<code>,</code>分隔参数时，将产生输出字段分隔符<code>OFS</code>。<code>OFS</code>默认值是空格，所以输出<code>,</code>默认是空格。可以在BEGIN重新定义<code>OFS</code>。</li>
+</ul>
+<p>支票簿的结算</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">$ cat checkbook.test</span><br><span class="line">1000</span><br><span class="line">125 Market -125.45</span><br><span class="line">126 Hardware Store -34.95</span><br><span class="line">127 Video Store -7.45</span><br><span class="line">128 Book Store -14.32</span><br><span class="line">129 Gasoline -16.10</span><br><span class="line"></span><br><span class="line">$ cat checkbook.awk </span><br><span class="line">BEGIN &#123; FS = <span class="string">" "</span> &#125;</span><br><span class="line"><span class="comment">#1 期望第一条记录为初始余额</span></span><br><span class="line">NR == 1 &#123; <span class="built_in">print</span> <span class="string">"Beginning Balance: \t"</span> <span class="variable">$1</span></span><br><span class="line">balance = <span class="variable">$1</span></span><br><span class="line">next <span class="comment">#取得下一条记录并结束</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">#2 应用与每个支票记录，将余额与数量相加。</span></span><br><span class="line">&#123; <span class="built_in">print</span> <span class="variable">$1</span>, <span class="variable">$2</span> ,<span class="variable">$3</span></span><br><span class="line">balance += <span class="variable">$3</span></span><br><span class="line"><span class="built_in">print</span> balance  <span class="comment"># 支票数额有负数</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$ awk -f checkbook.awk checkbook.test</span><br><span class="line">Beginning Balance: 	1000</span><br><span class="line">125 Market -125.45</span><br><span class="line">874.55</span><br><span class="line">126 Hardware Store</span><br><span class="line">874.55</span><br><span class="line">127 Video Store</span><br><span class="line">874.55</span><br><span class="line">128 Book Store</span><br><span class="line">874.55</span><br><span class="line">129 Gasoline -16.10</span><br><span class="line">858.45</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>系统参数<code>NF==x</code>，记录必须是x个字段才处理。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ awk <span class="string">'NF==1 &#123;print $1&#125;'</span> checkbook.test</span><br><span class="line">1000 </span><br><span class="line">$ awk <span class="string">'NF==3 &#123;print $1&#125;'</span> checkbook.test</span><br><span class="line">125 </span><br><span class="line">129 </span><br><span class="line">$ awk <span class="string">'NF==4 &#123;print $1&#125;'</span> checkbook.test</span><br><span class="line">126 </span><br><span class="line">127 </span><br><span class="line">128</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>系统参数<code>NR &gt; x</code>，当前记录号大于x才处理</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ awk <span class="string">'NR&gt;2 &#123;print $1,$2&#125;'</span> checkbook.test</span><br><span class="line">126 Hardware</span><br><span class="line">127 Video</span><br><span class="line">128 Book</span><br><span class="line">129 Gasoline</span><br></pre></td></tr></table></figure>
+<h4 id="获取文件的信息"><a href="#获取文件的信息" class="headerlink" title="获取文件的信息"></a>获取文件的信息</h4><p>ls -l $* |awk ‘ script’</p>
+<blockquote>
+<p>打印文件大小和名字</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l $* |awk <span class="string">' &#123;</span></span><br><span class="line"><span class="string">print $5, "\t", $9</span></span><br><span class="line"><span class="string">&#125;'</span></span><br><span class="line">116 	 awkscr</span><br><span class="line">36 	 block.awk</span><br><span class="line">71 	 blocklist.awk</span><br><span class="line">289 	 checkbook.awk</span><br><span class="line">114 	 checkbook.test</span><br><span class="line">132 	 names</span><br><span class="line">93 	 phonelist.awk</span><br><span class="line">64 	 stus</span><br><span class="line">30 	 <span class="built_in">test</span></span><br><span class="line">13 	 test2</span><br></pre></td></tr></table></figure>
+<h4 id="格式化打印"><a href="#格式化打印" class="headerlink" title="格式化打印"></a>格式化打印</h4><blockquote>
+<p>左对齐和右对齐</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ awk  <span class="string">'&#123;printf("|%10s|\n", "hello")&#125;'</span> ;</span><br><span class="line">|     hello|</span><br><span class="line">$ awk  <span class="string">'&#123;printf("|%-10s|\n", "hello")&#125;'</span> ;</span><br><span class="line">|hello     |</span><br></pre></td></tr></table></figure>
+<h4 id="向脚本传递参数"><a href="#向脚本传递参数" class="headerlink" title="向脚本传递参数"></a>向脚本传递参数</h4><p>awk ‘ script’ var=value inputfile</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ awk -f scriptfile high=100 low=20 stus </span><br><span class="line">100 20 john 85</span><br><span class="line">100 20 andrea 89</span><br><span class="line">100 20 jasper 84</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>使用脚本传递</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cat awket.sh </span><br><span class="line"><span class="meta">#! /bin/sh</span></span><br><span class="line">awk -f scriptfile <span class="string">"high=<span class="variable">$1</span>"</span> <span class="string">"low=<span class="variable">$2</span>"</span> stus</span><br><span class="line"></span><br><span class="line">$ sh awket.sh 600 100</span><br><span class="line">600 100 john 85</span><br><span class="line">600 100 andrea 89</span><br><span class="line">600 100 jasper 84</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>使用反引号”`”来执行pwd命令赋值给high</p>
+</blockquote>
+<p>sh awket.sh <code>pwd</code> 100</p>
+<blockquote>
+<p>用命令行的方式，指定系统变量</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ awk <span class="string">'&#123;print NR,$0&#125;'</span> OFS=<span class="string">' . '</span> names;</span><br><span class="line">1 . John Robinson, Koren Inc.,978 4th Ave.,Boston,MA 01760,696-0987</span><br><span class="line">2 . Phyllis Chapman, GVE Corp.,34 Sea Drive, Amesbury,MA 01881,879-0900</span><br></pre></td></tr></table></figure>
+<h4 id="信息的检索"><a href="#信息的检索" class="headerlink" title="信息的检索"></a>信息的检索</h4><blockquote>
+<p>搜开头是xxx的记录。shell 参数传递 awk脚本。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ cat acronyms </span><br><span class="line">BASIC	Beginner<span class="string">'s All-Purpose Symbolic Instruction Code</span></span><br><span class="line"><span class="string">CICS	Customer Information Control System</span></span><br><span class="line"><span class="string">COBOL	Common Business Orientated Language</span></span><br><span class="line"><span class="string">DBMS	Data Base Management System</span></span><br><span class="line"><span class="string">GIGO	Garbage in, garbage out</span></span><br><span class="line"><span class="string">GIRL	Generalized Information Retrieval Language</span></span><br><span class="line"><span class="string">NASA	National Aeronautic and Space Administration</span></span><br><span class="line"><span class="string">FAA	Federal Aviation Administration</span></span><br><span class="line"><span class="string">DOD	Department of Defense</span></span><br><span class="line"><span class="string">EOS	Earth Observing System</span></span><br><span class="line"><span class="string">USGCRP	U.S. Global Change Research Program</span></span><br><span class="line"><span class="string">NSF	National Science Foundation</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">$ cat acro</span></span><br><span class="line"><span class="string">#! /bin/sh</span></span><br><span class="line"><span class="string"># 将shell的$1赋给awk的search变量</span></span><br><span class="line"><span class="string">awk '</span> <span class="variable">$1</span> == search<span class="string">' search=$1 acronyms</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">$ sh acro CICS</span></span><br><span class="line"><span class="string">CICS  Customer Information Control System</span></span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="3-8-第八章-条件、循环和数组"><a href="#3-8-第八章-条件、循环和数组" class="headerlink" title="3.8 第八章 条件、循环和数组"></a>3.8 第八章 条件、循环和数组</h3><h4 id="条件语句"><a href="#条件语句" class="headerlink" title="条件语句"></a>条件语句</h4><p>if(expression)<br>    action<br>[else action2]</p>
+<blockquote>
+<p>操作符<code>~</code>来测试匹配</p>
+</blockquote>
+<p>if (x ~ /<a href="es">yY</a>?/) print x</p>
+<blockquote>
+<p>平均分65及格</p>
+</blockquote>
+<p>if(avg &gt;= 65)<br>    grade = “Pass”<br>else<br>    grade = “Fail”</p>
+<h4 id="条件操作符"><a href="#条件操作符" class="headerlink" title="条件操作符"></a>条件操作符</h4><p>expr ? action1 : action2</p>
+<p>grade = (avg &gt;= 65) ? “Pass” : “Fail”</p>
+<h4 id="循环"><a href="#循环" class="headerlink" title="循环"></a>循环</h4><h4 id="While循环"><a href="#While循环" class="headerlink" title="While循环"></a>While循环</h4><p>while(condition)<br>    action</p>
+<h4 id="Do-循环"><a href="#Do-循环" class="headerlink" title="Do 循环"></a>Do 循环</h4><p>do<br>    action<br>while(condition)</p>
+<h4 id="for-循环"><a href="#for-循环" class="headerlink" title="for 循环"></a>for 循环</h4><p>for ( set_counter; test_counter; increment_counter )<br>    action</p>
+<blockquote>
+<p>循环打印输入行的每一个字段</p>
+</blockquote>
+<p>for( i=1; i&lt;=NF ;i++)<br>    print $i</p>
+<blockquote>
+<p>循环打印输入行的每一个字段，排序，统计次数</p>
+</blockquote>
+<p>awk ‘{for( i=1; i&lt;=NF ;i++)<br>    print $i}’ acronyms |sort |uniq -c    </p>
+<h4 id="break-continue-next-exit"><a href="#break-continue-next-exit" class="headerlink" title="break continue,next,exit"></a>break continue,next,exit</h4><blockquote>
+<p>next读下一个输入行，exit退出循环并移到END(如果存在)。</p>
+</blockquote>
+<h4 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h4><h3 id="3-9-第九章-函数"><a href="#3-9-第九章-函数" class="headerlink" title="3.9 第九章 函数"></a>3.9 第九章 函数</h3><blockquote>
+<p>todo</p>
+</blockquote>
+<h3 id="3-10-第十章-底部抽屉"><a href="#3-10-第十章-底部抽屉" class="headerlink" title="3.10 第十章 底部抽屉"></a>3.10 第十章 底部抽屉</h3><blockquote>
+<p>todo</p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/sed/" rel="tag">#sed</a>
+          
+            <a href="/tags/awk/" rel="tag">#awk</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/23/[对比]Elastic{ON}基于Elasticsearch实践的几个案例/" rel="next" title="[对比]Elastic{ON}基于Elasticsearch实践的几个案例">
+                <i class="fa fa-chevron-left"></i> [对比]Elastic{ON}基于Elasticsearch实践的几个案例
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/30/[源码]Hadoop HDFS总结(1) 前言/" rel="prev" title="[源码]Hadoop HDFS 前言">
+                [源码]Hadoop HDFS 前言 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、前言"><span class="nav-text">一、前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-grep"><span class="nav-text">1.1 grep</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-基本语法"><span class="nav-text">1. 基本语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-常用场景"><span class="nav-text">2. 常用场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-sed"><span class="nav-text">1.2 sed</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-基本语法-1"><span class="nav-text">1. 基本语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-常用场景-1"><span class="nav-text">2. 常用场景</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-awk"><span class="nav-text">1.3 awk</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-基本语法-2"><span class="nav-text">1. 基本语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-常用场景，脚本处理等，awk-命令可以把文本分隔成若干部分，再通过-print-输出。"><span class="nav-text">2. 常用场景，脚本处理等，awk 命令可以把文本分隔成若干部分，再通过 print 输出。</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、精华"><span class="nav-text">二、精华</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、练习题"><span class="nav-text">三、练习题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-第一章-强大的编译工具"><span class="nav-text">3.1 第一章 强大的编译工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-第二章-了解基本操作"><span class="nav-text">3.2 第二章 了解基本操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-第三章-了解正则表达式语法"><span class="nav-text">3.3 第三章 了解正则表达式语法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-第四章-编写sed脚本"><span class="nav-text">3.4 第四章 编写sed脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tested"><span class="nav-text">tested</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#runsed"><span class="nav-text">runsed</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sed脚本中的4种类型"><span class="nav-text">sed脚本中的4种类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#对同一文件的多重编辑"><span class="nav-text">对同一文件的多重编辑</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#改变一组文件"><span class="nav-text">改变一组文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#提取宏定义"><span class="nav-text">提取宏定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#生成提纲"><span class="nav-text">生成提纲</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#编辑工作转移"><span class="nav-text">编辑工作转移</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-第五章-基本sed命令"><span class="nav-text">3.5 第五章 基本sed命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#sed-命令的用法"><span class="nav-text">sed 命令的用法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#注释"><span class="nav-text">注释</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#替换"><span class="nav-text">替换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除"><span class="nav-text">删除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#追加、插入和更改"><span class="nav-text">追加、插入和更改</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#列表"><span class="nav-text">列表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#转换"><span class="nav-text">转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打印"><span class="nav-text">打印</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打印行号"><span class="nav-text">打印行号</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-第六章-高级sed命令"><span class="nav-text">3.6 第六章 高级sed命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-第七章-编写AWK脚本"><span class="nav-text">3.7 第七章 编写AWK脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#注释-1"><span class="nav-text">注释</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字段和引用的分离"><span class="nav-text">字段和引用的分离</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#表达式"><span class="nav-text">表达式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打印空行数"><span class="nav-text">打印空行数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#计算学生的平均成绩"><span class="nav-text">计算学生的平均成绩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#系统变量"><span class="nav-text">系统变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取文件的信息"><span class="nav-text">获取文件的信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#格式化打印"><span class="nav-text">格式化打印</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#向脚本传递参数"><span class="nav-text">向脚本传递参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#信息的检索"><span class="nav-text">信息的检索</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-8-第八章-条件、循环和数组"><span class="nav-text">3.8 第八章 条件、循环和数组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#条件语句"><span class="nav-text">条件语句</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#条件操作符"><span class="nav-text">条件操作符</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#循环"><span class="nav-text">循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#While循环"><span class="nav-text">While循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Do-循环"><span class="nav-text">Do 循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#for-循环"><span class="nav-text">for 循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#break-continue-next-exit"><span class="nav-text">break continue,next,exit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数组"><span class="nav-text">数组</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-9-第九章-函数"><span class="nav-text">3.9 第九章 函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-10-第十章-底部抽屉"><span class="nav-text">3.10 第十章 底部抽屉</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

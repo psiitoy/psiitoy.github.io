@@ -1,0 +1,774 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="es," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文重点讨论基于5.4.3版本的ES在gradle构建项目的环境下如何做插件开发。">
+<meta name="keywords" content="es">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[源码]Elasticsearch源码6(5.4插件开发)">
+<meta property="og:url" content="https://psiitoy.github.io/2017/08/17/[源码]Elasticsearch源码6(5.4插件开发)/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="本文重点讨论基于5.4.3版本的ES在gradle构建项目的环境下如何做插件开发。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es5plugin-core.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es5plugin-plugin.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.126Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[源码]Elasticsearch源码6(5.4插件开发)">
+<meta name="twitter:description" content="本文重点讨论基于5.4.3版本的ES在gradle构建项目的环境下如何做插件开发。">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/essourcecode/es5plugin-core.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/08/17/[源码]Elasticsearch源码6(5.4插件开发)/"/>
+
+  <title> [源码]Elasticsearch源码6(5.4插件开发) | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [源码]Elasticsearch源码6(5.4插件开发)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-08-17T22:12:06+08:00" content="2017-08-17">
+              2017-08-17
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/08/17/[源码]Elasticsearch源码6(5.4插件开发)/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/08/17/[源码]Elasticsearch源码6(5.4插件开发)/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文重点讨论基于<code>5.4.3</code>版本的ES在<code>gradle</code>构建项目的环境下如何做插件开发。</p>
+<a id="more"></a>
+<h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><h3 id="1-1-5-4-和-2-x-源码开发的差别"><a href="#1-1-5-4-和-2-x-源码开发的差别" class="headerlink" title="1.1 5.4 和 2.x 源码开发的差别"></a>1.1 5.4 和 2.x 源码开发的差别</h3><ul>
+<li>构建方式从maven变成了gradle这个是最大的差别，而对于ES核心包的插件模块来说只是做了优化，对于开发者来说掌握了2.x的开发就可以迅速上手5.4.x的开发。</li>
+</ul>
+<h3 id="1-2-插件调试与DEBUG"><a href="#1-2-插件调试与DEBUG" class="headerlink" title="1.2 插件调试与DEBUG"></a>1.2 插件调试与DEBUG</h3><ul>
+<li>没有办法直接把编译后的发行版目录位置做软链挂载到配置文件了，只能自己编译后解压到<code>{ES_HOME}/plugins</code>文件夹下了。</li>
+</ul>
+<blockquote>
+<p>原因如下</p>
+</blockquote>
+<ul>
+<li><code>2.X</code>版本的ES插件加载目录获取</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Environment</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Environment</span><span class="params">(Settings settings)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...其他略</span></span><br><span class="line">        <span class="keyword">if</span> (settings.get(<span class="string">"path.plugins"</span>) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                  pluginsFile = PathUtils.get(cleanPath(settings.get(<span class="string">"path.plugins"</span>)));<span class="comment">//code1</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  pluginsFile = homeFile.resolve(<span class="string">"plugins"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>5.4.3</code>版本的ES插件加载目录获取</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Environment</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Environment</span><span class="params">(Settings settings)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//...其他略</span></span><br><span class="line">        pluginsFile = homeFile.resolve(<span class="string">"plugins"</span>);    </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>code1</code> 生生被干掉了。。。so 只能老老实实 <code>assembly</code> then <code>copy</code>了。</li>
+</ul>
+<h2 id="二、5-4-3插件开发"><a href="#二、5-4-3插件开发" class="headerlink" title="二、5.4.3插件开发"></a>二、5.4.3插件开发</h2><h3 id="2-1-启动项目"><a href="#2-1-启动项目" class="headerlink" title="2.1 启动项目"></a>2.1 启动项目</h3><blockquote>
+<p>第一步当然是要把5.4.3的源码项目启动起来。下面我们逐步操作。</p>
+</blockquote>
+<p>1) 下载项目<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> https://github.com/elastic/elasticsearch.git</span><br></pre></td></tr></table></figure></p>
+<p>2) 项目根目录执行<code>gradle idea</code>，使项目按照idea的方式构建</p>
+<p>3) idea打开项目并且<code>import gradle project</code>导入项目。</p>
+<p>4) 创建<code>${ES_HOME}/config</code>，把<code>distribution/src/main/resources/config</code> 的文件都 <code>copy</code> 过来(不用拷jvm.options)</p>
+<ul>
+<li><p>我们的${ES_HOME}就是<code>$USER_HOME/elasticsearch-v5.4.3/core</code></p>
+</li>
+<li><p>jvm.options 是通过启动脚本生效的，我们不用纠结这个文件。</p>
+</li>
+</ul>
+<p>5) 启动发生<code>access denied</code>异常</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2017-03-08 11:06:11,447 main ERROR Could not register mbeans java.security.AccessControlException: access denied (&quot;javax.management.MBeanTrustPermission&quot; &quot;register&quot;)</span><br><span class="line">     at java.security.AccessControlContext.checkPermission(AccessControlContext.java:472)</span><br><span class="line">     at java.lang.SecurityManager.checkPermission(SecurityManager.java:585)</span><br><span class="line">     ...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>解决方案：添加 -Djava.security.policy=/home/wangdi/IdeaWorkspace/sourcecode/elasticsearch-v5.4.3/core/config/elasticsearch.policy</li>
+</ul>
+<blockquote>
+<p>内容如下</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">grant &#123;</span><br><span class="line">    permission javax.management.MBeanTrustPermission &quot;register&quot;;</span><br><span class="line">    permission javax.management.MBeanServerPermission &quot;createMBeanServer&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>6) 如果报<code>Exception: java.security.AccessControlException thrown from the UncaughtExceptionHandler in thread</code>之类的其他权限异常。</p>
+<ul>
+<li>解决方案：直接把<code>elasticsearch.policy</code>改为。(暴力点)</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">grant &#123;</span><br><span class="line">    permission java.security.AllPermission;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>7) 创建<code>${ES_HOME}/plugins</code>文件夹</p>
+<blockquote>
+<p>和2.x开发是一样的，先空着。</p>
+</blockquote>
+<p>8) <code>Unsupported transport.type</code>异常</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">[2017-09-14T11:10:01,550][WARN ][o.e.b.ElasticsearchUncaughtExceptionHandler] [] uncaught exception in thread [main]</span><br><span class="line">org.elasticsearch.bootstrap.StartupException: java.lang.IllegalStateException: Unsupported transport.type []</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>解决方法:<ul>
+<li>根目录<code>modules</code>模块下找到<code>transport-netty3</code>或者<code>transport-netty4</code>模块，构建<code>netty</code>子模块。</li>
+<li>然后<code>modules/transport-netty3/build/distributions</code>下面找到发行版的zip包。</li>
+<li>最后再核心包下的<code>modules</code>目录下建个文件夹叫<code>transport-netty3</code>或<code>transport-netty4</code>(模块名)，把对应的zip包解压到这里。</li>
+</ul>
+</li>
+</ul>
+<p>9) jvm参数校验异常</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">ERROR: [1] bootstrap checks failed</span><br><span class="line">[1]: initial heap size [130023424] not equal to maximum heap size [2071986176]; this can cause resize pauses and prevents mlockall from locking the entire heap</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<ul>
+<li>解决方法: 添加启动参数 <code>-Xms1g -Xmx1g</code>。</li>
+</ul>
+<blockquote>
+<p>再提一下 jvm.options 是通过启动脚本生效的，我们不用纠结这个文件。自己在idea配置jvm启动参数，启动参数如下。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xms1g -Xmx1g -ea -Delasticsearch -Des.foreground=yes -Des.path.home=/home/wangdi/IdeaWorkspace/sourcecode/elasticsearch-v5.4.3/core -Djava.security.policy=/home/wangdi/IdeaWorkspace/sourcecode/elasticsearch-v5.4.3/core/config/elasticsearch.policy</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>elasticsearch.yml如下。详情参见:<a href="https://www.ibm.com/support/knowledgecenter/zh/SSFPJS_8.5.6/com.ibm.wbpm.main.doc/topics/rfps_esearch_configoptions.html" target="_blank" rel="noopener">elasticsearch.yml的配置属性官方解释</a></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">path.logs: /usr/share/elasticsearch5/logs</span><br><span class="line">path.data: /usr/share/elasticsearch5/data</span><br><span class="line"></span><br><span class="line">http.cors.enabled: true</span><br><span class="line">http.cors.allow-origin: &quot;*&quot;</span><br><span class="line"></span><br><span class="line">network.host: 0.0.0.0</span><br></pre></td></tr></table></figure>
+<p>10) 项目启动成功，开始开发调试</p>
+<h3 id="2-2-插件开发项目结构"><a href="#2-2-插件开发项目结构" class="headerlink" title="2.2 插件开发项目结构"></a>2.2 插件开发项目结构</h3><blockquote>
+<p>核心包模块结构如下</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es5plugin-core.png" alt="图 es5plugin-core"></p>
+<blockquote>
+<p>插件模块结构如下</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es5plugin-plugin.png" alt="图 es5plugin-plugin"></p>
+<h3 id="2-3-5-4-3插件开发源码分析"><a href="#2-3-5-4-3插件开发源码分析" class="headerlink" title="2.3 5.4.3插件开发源码分析"></a>2.3 5.4.3插件开发源码分析</h3><blockquote>
+<p>我们简单看下<code>ActionLoggingPlugin</code>这个 <code>ES</code> 源码测试用例中提供的插件。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ActionLoggingPlugin</span> <span class="keyword">extends</span> <span class="title">Plugin</span> <span class="keyword">implements</span> <span class="title">ActionPlugin</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Collection&lt;Module&gt; <span class="title">createGuiceModules</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> Collections.&lt;Module&gt;singletonList(<span class="keyword">new</span> ActionLoggingModule());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> List&lt;Class&lt;? extends ActionFilter&gt;&gt; getActionFilters() &#123;</span><br><span class="line">            <span class="keyword">return</span> singletonList(LoggingFilter.class);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ActionLoggingModule</span> <span class="keyword">extends</span> <span class="title">AbstractModule</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            bind(LoggingFilter.class).asEagerSingleton();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">LoggingFilter</span> <span class="keyword">extends</span> <span class="title">ActionFilter</span>.<span class="title">Simple</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> ThreadPool threadPool;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Inject</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">LoggingFilter</span><span class="params">(Settings settings, ThreadPool pool)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>(settings);</span><br><span class="line">            <span class="keyword">this</span>.threadPool = pool;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">order</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">999</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">apply</span><span class="params">(String action, ActionRequest request, ActionListener&lt;?&gt; listener)</span> </span>&#123;</span><br><span class="line">            requests.add(<span class="keyword">new</span> RequestAndHeaders(threadPool.getThreadContext().getHeaders(), request));</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>结论就是，ES的 <code>&gt;&gt;5.4.x</code> 版本对插件做了优化重构，但是对于开发者来说和<code>2.x</code>插件开发几乎无异。</p>
+</blockquote>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/es/" rel="tag">#es</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/12/[源码]Elasticsearch源码5(2.x插件开发)/" rel="next" title="[源码]Elasticsearch源码5(2.x插件开发)">
+                <i class="fa fa-chevron-left"></i> [源码]Elasticsearch源码5(2.x插件开发)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/23/[对比]Elastic{ON}基于Elasticsearch实践的几个案例/" rel="prev" title="[对比]Elastic{ON}基于Elasticsearch实践的几个案例">
+                [对比]Elastic{ON}基于Elasticsearch实践的几个案例 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、前言"><span class="nav-text">一、前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-5-4-和-2-x-源码开发的差别"><span class="nav-text">1.1 5.4 和 2.x 源码开发的差别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-插件调试与DEBUG"><span class="nav-text">1.2 插件调试与DEBUG</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、5-4-3插件开发"><span class="nav-text">二、5.4.3插件开发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-启动项目"><span class="nav-text">2.1 启动项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-插件开发项目结构"><span class="nav-text">2.2 插件开发项目结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-5-4-3插件开发源码分析"><span class="nav-text">2.3 5.4.3插件开发源码分析</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

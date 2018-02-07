@@ -1,0 +1,787 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="blog,hexo,github," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文将总结性的介绍如何建立自己的github.io博客，后续会持续补充，进阶。感谢baixin提供的参考文章。">
+<meta name="keywords" content="blog,hexo,github">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[总结]HEXO的使用">
+<meta property="og:url" content="https://psiitoy.github.io/2016/07/25/[总结]HEXO的使用/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="本文将总结性的介绍如何建立自己的github.io博客，后续会持续补充，进阶。感谢baixin提供的参考文章。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.100Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[总结]HEXO的使用">
+<meta name="twitter:description" content="本文将总结性的介绍如何建立自己的github.io博客，后续会持续补充，进阶。感谢baixin提供的参考文章。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2016/07/25/[总结]HEXO的使用/"/>
+
+  <title> [总结]HEXO的使用 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [总结]HEXO的使用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-25T16:15:06+08:00" content="2016-07-25">
+              2016-07-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/总结/" itemprop="url" rel="index">
+                    <span itemprop="name">总结</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2016/07/25/[总结]HEXO的使用/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2016/07/25/[总结]HEXO的使用/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文将总结性的介绍如何建立自己的github.io博客，后续会持续补充，进阶。感谢<a href="https://baixin.io" target="_blank" rel="noopener">baixin</a>提供的参考文章。</p>
+<a id="more"></a>
+<hr>
+<p>技术选型为github+hexo+idea，首先最简单的阐述下这个东西都干嘛的</p>
+<h2 id="1、-技术选型"><a href="#1、-技术选型" class="headerlink" title="1、 技术选型"></a>1、 技术选型</h2><h3 id="1-1-github"><a href="#1-1-github" class="headerlink" title="1.1 github"></a>1.1 github</h3><ul>
+<li>免费空间挂载网站。(这个好理解，提供username.github.io直接可以访问)</li>
+<li>发布网站。(将hexo生成的网站推送到username.github.io上)</li>
+<li>版本控制。(将整个网站的源文件推送到另一个repo上，便于网站开发环境迁移，多机工作等)</li>
+</ul>
+<h3 id="1-2-hexo"><a href="#1-2-hexo" class="headerlink" title="1.2 hexo"></a>1.2 hexo</h3><ul>
+<li>生成博客框架页面，可以通过md解析文章渲染页面，然后发布到github上，多种风格支持，扩展插件丰富。</li>
+<li>顺便对比下<code>hexo</code>和<code>jekyll</code><ul>
+<li>hexo 基于<code>nodejs</code>，实施起来简便。</li>
+<li>jekyll 基于<code>ruby</code>，实施起来折腾。 但是支持在线编辑</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-3-idea"><a href="#1-3-idea" class="headerlink" title="1.3 idea"></a>1.3 idea</h3><ul>
+<li>工作环境，写作环境。(git插件支持强大，md支持预览)</li>
+</ul>
+<hr>
+<h2 id="2、-具体部署方案"><a href="#2、-具体部署方案" class="headerlink" title="2、 具体部署方案"></a>2、 具体部署方案</h2><h3 id="2-1-当然是先申请github"><a href="#2-1-当然是先申请github" class="headerlink" title="2.1 当然是先申请github"></a>2.1 当然是先申请github</h3><blockquote>
+<p>在此不再赘述。需要注意的是要申请两个</p>
+<ul>
+<li>username.github.io只需要申请下来存放页面，发布只需要配置好_config.yml文件的deploy属性，通过<code>hexo d</code>发布</li>
+<li>username.github.io.hexo 整个hexo完整项目,方便迁移，多机协作。 </li>
+</ul>
+</blockquote>
+<h3 id="2-2-在项目中安装hexo"><a href="#2-2-在项目中安装hexo" class="headerlink" title="2.2 在项目中安装hexo"></a>2.2 在项目中安装hexo</h3><blockquote>
+<p>并按照其规则把主题样式放在themes里面(我们选择的是next)，并配置好_config.yml</p>
+</blockquote>
+<h3 id="2-3-扩展网站功能"><a href="#2-3-扩展网站功能" class="headerlink" title="2.3 扩展网站功能"></a>2.3 扩展网站功能</h3><blockquote>
+<p>安装扩展插件比如评论、百度统计。</p>
+</blockquote>
+<h3 id="2-4-编写md文件"><a href="#2-4-编写md文件" class="headerlink" title="2.4 编写md文件"></a>2.4 编写md文件</h3><blockquote>
+<p>可以写博文啦。</p>
+</blockquote>
+<h2 id="3、-废话少说上代码"><a href="#3、-废话少说上代码" class="headerlink" title="3、 废话少说上代码"></a>3、 废话少说上代码</h2><blockquote>
+<p>注意以下针对已经构建好的项目，再次迁移。</p>
+<p>  克隆项目</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> https://github.com/psiitoy/psiitoy.github.io.hexo.git</span><br><span class="line"><span class="built_in">cd</span> psiitoy.github.io.hexo</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  安装hexo</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g hexo</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  添加git插件支持</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  初始化hexo</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init --no-clone</span><br></pre></td></tr></table></figure>
+<blockquote>
+<blockquote>
+<p> <code>hexo init</code>构建前项目结构_config.yml  package.json  scaffolds  source  themes<br> <code>hexo init</code>构建后项目结构_config.yml  package.json  scaffolds  source  themes  node_modules  public   db.json<br> 多了三个文件<code>db.json</code> <code>public</code> <code>node_modules</code>,同时git信息都没了…T.T,不慌继续</p>
+</blockquote>
+<p>  hexo的文件结构</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">_config.yml     <span class="comment">#主站的配置文件</span></span><br><span class="line">node_modules  </span><br><span class="line">package.json    <span class="comment">#应用程序的信息</span></span><br><span class="line">scaffolds       <span class="comment">#模版文件夹，新建文章时会根据 scaffold里对应md生成文件</span></span><br><span class="line"><span class="built_in">source</span>          <span class="comment">#存放用户资源，除 _posts 文件夹之外， _ 开头的文件/和隐藏的文件将会被忽略</span></span><br><span class="line">themes          <span class="comment">#主题文件夹</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  初始化git，设置’git push’只提交当前分支，禁用lf自动转换，禁用中文文件名转换</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ git init</span><br><span class="line">$ git config --global push.default simple</span><br><span class="line">$ git config --global core.autocrlf <span class="literal">false</span></span><br><span class="line">$ git config --global core.quotepath <span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  追踪项目</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git remote add origin git@github.com:psiitoy/psiitoy.github.io.hexo.git</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  纳入版本控制</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git add .</span><br><span class="line">$ git commit -m <span class="string">'first commit'</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  更新分支</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ git pull origin master</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>  然后运行idea rebase并且解决冲突(git能力有限，交给idea搞了)</p>
+<blockquote>
+<p> revert冲突文件<br> commit解决冲突<br> rebase到远程分支</p>
+</blockquote>
+<p>  ok了(idea暂时只能commit不能push待解决)，一切git操作交给命令行</p>
+</blockquote>
+<hr>
+<h2 id="4、hexo备注"><a href="#4、hexo备注" class="headerlink" title="4、hexo备注"></a>4、hexo备注</h2><h3 id="4-1-一些常用命令："><a href="#4-1-一些常用命令：" class="headerlink" title="4.1 一些常用命令："></a>4.1 一些常用命令：</h3><pre><code>hexo new &quot;postName&quot; #新建文章
+hexo new page &quot;pageName&quot; #新建页面
+hexo generate #生成静态页面至public目录
+hexo server #开启预览访问端口（默认端口4000，&apos;ctrl + c&apos;关闭server）
+hexo deploy #将.deploy目录部署到GitHub
+hexo help  # 查看帮助
+hexo version  #查看Hexo的版本
+</code></pre><h3 id="4-2-问题解决"><a href="#4-2-问题解决" class="headerlink" title="4.2 问题解决"></a>4.2 问题解决</h3><h4 id="4-2-1-github-io-js-404无法正常显示"><a href="#4-2-1-github-io-js-404无法正常显示" class="headerlink" title="4.2.1 github.io js 404无法正常显示"></a>4.2.1 github.io js 404无法正常显示</h4><ul>
+<li>最近github page更新了，GitHub Pages 过滤掉了 source/vendors 目录的访问，所以next主题下的source下的vendors目录不能够被访问到，所以就出现了本地hexo s能够正常访问，但是deploy到github就是一片空白，按f12，可以看到大量来自source/vendors的css和js提示404</li>
+</ul>
+<blockquote>
+<p>方法一（来自github next主题issue）:<br>首先修改source/vendors为source/lib，然后修改_config.yml， 将 _internal: vendors修改为_internal:lib 然后修改next底下所有引用source/vendors路径为source/lib。这些地方可以通过文件查找找出来。主要集中在这几个文件中。1. Hexo\themes\next.bowerrc 2. Hexo\themes\next.gitignore 3. Hexo\themes\next.javascript_ignore 4. Hexo\themes\next\bower.json 。修改完毕后，刷新重新g一遍就ok啦。</p>
+<p>方法二:更新next主题，不过听过最新的next主题对第三方例如多说删除了，具体不清楚，不敢亲易尝试，毕竟更新一次主题引来的问题太多，很多配置可能都要改，代价太高，所以推荐第一种方法</p>
+</blockquote>
+<hr>
+<h2 id="5、Markdown语法参考链接"><a href="#5、Markdown语法参考链接" class="headerlink" title="5、Markdown语法参考链接"></a>5、Markdown语法参考链接</h2><p><strong><em><a href="https://www.zybuluo.com/mdeditor" target="_blank" rel="noopener">很实用的例子</a></em></strong></p>
+<hr>
+<h2 id="6、Hexo参考链接"><a href="#6、Hexo参考链接" class="headerlink" title="6、Hexo参考链接"></a>6、Hexo参考链接</h2><p><strong><em><a href="https://anonymalias.github.io/2016/01/14/hexo-construct-homepage/" target="_blank" rel="noopener">通过Hexo在GitHub搭站全记录</a></em></strong><br><strong><em><a href="http://baixin.io/2015/08/HEXO%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/" target="_blank" rel="noopener">HEXO搭建个人博客</a></em></strong><br><strong><em><a href="http://www.jianshu.com/p/2640561e96f8" target="_blank" rel="noopener">搭建 Hexo 博客–增强篇</a></em></strong><br><strong><em><a href="http://blog.csdn.net/willxue123/article/details/50994852" target="_blank" rel="noopener">next主题的配置和优化</a></em></strong><br><strong><em><a href="https://github.com/iissnan/hexo-theme-next/wiki/" target="_blank" rel="noopener">HEXO增加标签页、分类页</a></em></strong><br><strong><em><a href="http://www.zhaiqianfeng.com/2017/03/changyan-for-hexo-next-theme.html" target="_blank" rel="noopener">HEXO next主题增加畅言评论系统</a></em></strong></p>
+<hr>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/blog/" rel="tag">#blog</a>
+          
+            <a href="/tags/hexo/" rel="tag">#hexo</a>
+          
+            <a href="/tags/github/" rel="tag">#github</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/24/[理论]并发数-吞吐量-响应时间/" rel="next" title="[理论]并发数-吞吐量-响应时间">
+                <i class="fa fa-chevron-left"></i> [理论]并发数-吞吐量-响应时间
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/07/25/[理论]mysql事务的ACID/" rel="prev" title="[理论]mysql事务的ACID">
+                [理论]mysql事务的ACID <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、-技术选型"><span class="nav-text">1、 技术选型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-github"><span class="nav-text">1.1 github</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-hexo"><span class="nav-text">1.2 hexo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-idea"><span class="nav-text">1.3 idea</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、-具体部署方案"><span class="nav-text">2、 具体部署方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-当然是先申请github"><span class="nav-text">2.1 当然是先申请github</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-在项目中安装hexo"><span class="nav-text">2.2 在项目中安装hexo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-扩展网站功能"><span class="nav-text">2.3 扩展网站功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-编写md文件"><span class="nav-text">2.4 编写md文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、-废话少说上代码"><span class="nav-text">3、 废话少说上代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、hexo备注"><span class="nav-text">4、hexo备注</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-一些常用命令："><span class="nav-text">4.1 一些常用命令：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-问题解决"><span class="nav-text">4.2 问题解决</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-1-github-io-js-404无法正常显示"><span class="nav-text">4.2.1 github.io js 404无法正常显示</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、Markdown语法参考链接"><span class="nav-text">5、Markdown语法参考链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6、Hexo参考链接"><span class="nav-text">6、Hexo参考链接</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

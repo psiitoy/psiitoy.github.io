@@ -1,0 +1,1033 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="分布式,mysql," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="文章集中整理总结mysql分库分表开源产品，分布式数据库的设计，以及实际应用案例等相关内容，部分附上本文作者实际应用过程中的理解。 本文感谢sjdbc，mycat，姜承尧，林涛等文章提供的精彩介绍。">
+<meta name="keywords" content="分布式,mysql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[分享]浅谈分布式数据库">
+<meta property="og:url" content="https://psiitoy.github.io/2017/03/22/[分享]浅谈分布式数据库/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="文章集中整理总结mysql分库分表开源产品，分布式数据库的设计，以及实际应用案例等相关内容，部分附上本文作者实际应用过程中的理解。 本文感谢sjdbc，mycat，姜承尧，林涛等文章提供的精彩介绍。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/danku.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/fenpian.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/fenzu.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/fenzu+fenpian.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/swdt/fenpianleixing.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/swdt/shardingproduct.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/sjdbc/shardingjdbcjiagou.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/sjdbc-1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/sjdbc-2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/sjdbc/shardingjdbcxml.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/sjdbc/sjdbcgh.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/jproxy-1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/dbproxy/mycat-jiagoux.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/keyong1.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/keyong2.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-1.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-1ppt.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-2.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-2ppt.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-3.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-3ppt.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-4.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-4ppt.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-5.jpg">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/qianku.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/mongo-before.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/mongo-after.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/yace1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/yace2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/yace3.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/ump1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/ump2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/sharding/anli/kucuntouminghua.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.090Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[分享]浅谈分布式数据库">
+<meta name="twitter:description" content="文章集中整理总结mysql分库分表开源产品，分布式数据库的设计，以及实际应用案例等相关内容，部分附上本文作者实际应用过程中的理解。 本文感谢sjdbc，mycat，姜承尧，林涛等文章提供的精彩介绍。">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/sharding/danku.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/03/22/[分享]浅谈分布式数据库/"/>
+
+  <title> [分享]浅谈分布式数据库 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [分享]浅谈分布式数据库
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-03-22T21:15:06+08:00" content="2017-03-22">
+              2017-03-22
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/分享/" itemprop="url" rel="index">
+                    <span itemprop="name">分享</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/03/22/[分享]浅谈分布式数据库/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/03/22/[分享]浅谈分布式数据库/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>文章集中整理总结mysql分库分表开源产品，分布式数据库的设计，以及实际应用案例等相关内容，部分附上本文作者实际应用过程中的理解。</p>
+<p>本文感谢<strong><em><a href="http://dangdangdotcom.github.io/sharding-jdbc/" target="_blank" rel="noopener">sjdbc</a></em></strong>，<strong><em><a href="http://http://www.mycat.org.cn/" target="_blank" rel="noopener">mycat</a></em></strong>，<strong><em><a href="https://my.oschina.net/u/854798" target="_blank" rel="noopener">姜承尧</a>，<a href="http://www.iamlintao.com/4023.html" target="_blank" rel="noopener">林涛</a></em></strong>等文章提供的精彩介绍。</p>
+<a id="more"></a>
+<hr>
+<h2 id="1、先抛出两个问题"><a href="#1、先抛出两个问题" class="headerlink" title="1、先抛出两个问题"></a>1、先抛出两个问题</h2><p>  问题一、当mysql单表数据量爆炸时，你怎么办？<br>  问题二、当你的数据库无法承受高强度io时你怎么办？</p>
+<hr>
+<h2 id="2、-基本概念"><a href="#2、-基本概念" class="headerlink" title="2、 基本概念"></a>2、 基本概念</h2><h3 id="2-1-谈数据库分片需要首先确定以下概念"><a href="#2-1-谈数据库分片需要首先确定以下概念" class="headerlink" title="2.1 谈数据库分片需要首先确定以下概念"></a>2.1 谈数据库分片需要首先确定以下概念</h3><p>​    1) 单库,就是一个库<br><img src="https://psiitoy.github.io/img/blog/sharding/danku.png" alt="图 danku"></p>
+<p>​    2) 分片(sharding)，分片解决<code>扩展性</code>问题，属于水平拆分，引入分片，就引入了<code>数据路由</code>和<code>分区键</code>的概念。分表解决的是数据量过大的问题，分库解决的是数据库性能瓶颈的问题。<br><img src="https://psiitoy.github.io/img/blog/sharding/fenpian.jpg" alt="图 fenpian"></p>
+<p>​    3) 分组(group)，分组解决<code>可用性</code>问题，分组通常通过主从复制(<code>replication</code>)的方式实现。(各种可用级别方案单独介绍)<br><img src="https://psiitoy.github.io/img/blog/sharding/fenzu.jpg" alt="图 fenzu"></p>
+<p>​    4) 互联网公司数据库实际软件架构是(<code>大数据量下</code>)：又分片，又分组（如下图）</p>
+<p><img src="https://psiitoy.github.io/img/blog/sharding/fenzu+fenpian.jpg" alt="图 fenzu+fenpian"></p>
+<hr>
+<h2 id="3、-分片"><a href="#3、-分片" class="headerlink" title="3、 分片"></a>3、 分片</h2><h3 id="3-1-水平拆分，垂直拆分都是什么？"><a href="#3-1-水平拆分，垂直拆分都是什么？" class="headerlink" title="3.1 水平拆分，垂直拆分都是什么？"></a>3.1 水平拆分，垂直拆分都是什么？</h3><p><img src="https://psiitoy.github.io/img/blog/sharding/swdt/fenpianleixing.png" alt="图 fenpianleixing"></p>
+<blockquote>
+<p>分区表？1)若不走分区键很容易出现全表锁，并发上来后简直是灾难。2)自己分库分表，自己掌控业务场景、访问模式，可控。mysql分区表官方介绍是针对myisam做的优化，你知道他怎么玩的？分半天还是一个ibdata是不是很尴尬</p>
+</blockquote>
+<h3 id="3-2-为什么分表"><a href="#3-2-为什么分表" class="headerlink" title="3.2 为什么分表?"></a>3.2 为什么分表?</h3><p>​    关系型数据库在大于一定数据量的情况下检索性能会急剧下降。在面对互联网海量数据情况时，所有数据都存于一张表，显然会轻易超过数据库表可承受的<code>数据量阀值</code>。这个单表可承受的数据量阀值，需根据数据库和并发量的差异，通过实际测试获得。</p>
+<blockquote>
+<p>水平拆分如果能预估规模，越早做成本越低。</p>
+</blockquote>
+<h3 id="2-3-为什么分库"><a href="#2-3-为什么分库" class="headerlink" title="2.3 为什么分库?"></a>2.3 为什么分库?</h3><p>​    单纯的分表虽然可以解决数据量过大导致检索变慢的问题，但无法解决过多并发请求访问同一个库，导致数据库响应变慢的问题。所以通常<code>水平拆分都至少要采用分库</code>的方式，用于一并解决大数据量和<code>高并发</code>的问题。这也是部分开源的分片数据库中间件只支持分库的原因。</p>
+<h3 id="3-4-分布式事务？"><a href="#3-4-分布式事务？" class="headerlink" title="3.4 分布式事务？"></a>3.4 分布式事务？</h3><p>​    但分表也有不可替代的适用场景。最常见的分表需求是事务问题。同在一个库则不需考虑分布式事务，善于使用同库不同表可有效避免分布式事务带来的麻烦。目前强一致性的分布式事务由于性能问题，导致使用起来并不一定比不分库分表快。目前采用最终一致性的柔性事务居多。分表的另一个存在的理由是，过多的数据库实例不利于运维管理。</p>
+<blockquote>
+<p>mysql本身？<br>消息补偿？<br>2PC?</p>
+</blockquote>
+<h3 id="3-5-小结"><a href="#3-5-小结" class="headerlink" title="3.5 小结"></a>3.5 小结</h3><p>​    综上所述，最佳实践是合理地配合使用分库+分表。</p>
+<h3 id="3-6-如何自己实现分库分表？"><a href="#3-6-如何自己实现分库分表？" class="headerlink" title="3.6 如何自己实现分库分表？"></a>3.6 如何自己实现分库分表？</h3><p>​    1) dao层，首先<code>通过分区键算出库名表名</code>(如shardKey%shardNum 算出来表index如y，然后y/(shardNum/sourceNum)=x,y是表下标，x是库下标)。<br>​    2) <code>把source从spring容器中拿出来</code>，把表名当参数传进去，拼成分片后的sql。<br>​    3) 思路大概是(select … from order where … -&gt; 先拿到db_x的source 然后 select … from order_y where …) </p>
+<blockquote>
+<p>你想这么干？你已经成功了。当然淘宝和当当的架构师也是这么干的。</p>
+</blockquote>
+<h3 id="3-7-SO，不需要我们亲自动手，其实你需要做的只是按照实际需求挑选而已。"><a href="#3-7-SO，不需要我们亲自动手，其实你需要做的只是按照实际需求挑选而已。" class="headerlink" title="3.7 SO，不需要我们亲自动手，其实你需要做的只是按照实际需求挑选而已。"></a>3.7 SO，不需要我们亲自动手，其实你需要做的只是按照实际需求挑选而已。</h3><p><img src="https://psiitoy.github.io/img/blog/sharding/swdt/shardingproduct.png" alt="图 shardingpstrategy"></p>
+<h3 id="3-8-重点介绍两个产品，先不说具体配置，只说思想"><a href="#3-8-重点介绍两个产品，先不说具体配置，只说思想" class="headerlink" title="3.8 重点介绍两个产品，先不说具体配置，只说思想"></a>3.8 重点介绍两个产品，先不说具体配置，只说思想</h3><p>​    1) sharding-jdbc（所处位置，通用数据访问层，部署在客户端的jar包，用于将用户的SQL路由到指定的数据库中）</p>
+<blockquote>
+<p>盗一波图</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/sharding/sjdbc/shardingjdbcjiagou.png" alt="图 shardingjdbcjiagou"><br><img src="https://psiitoy.github.io/img/blog/dbproxy/sjdbc-1.png" alt="图sjdbc-1"><br><img src="https://psiitoy.github.io/img/blog/dbproxy/sjdbc-2.png" alt="图sjdbc-2"><br><img src="https://psiitoy.github.io/img/blog/sharding/sjdbc/shardingjdbcxml.png" alt="图 shardingjdbcxml"><br><img src="https://psiitoy.github.io/img/blog/sharding/sjdbc/sjdbcgh.png" alt="图 sjdbcgh"></p>
+<p>​    2) jproxy</p>
+<blockquote>
+<p>jproxy是什么？</p>
+</blockquote>
+<p>​    jproxy提供MariaDB, MySQL等数据库的统一接入访问，拥有流量过载保护，数据自动拆分，可配置路由规则，数据无缝迁移等功能。<br>​    应用场景：数据需要分库分表，自动扩容的应用。</p>
+<p><img src="https://psiitoy.github.io/img/blog/dbproxy/jproxy-1.png" alt="图jproxy架构"></p>
+<blockquote>
+<p>为什么分片都是2的n次方？a % (2^n) 等价于 a &amp; (2^n - 1) 其中一个原因就是位运算</p>
+<p>扩容？ 虚拟桶。 极限就是一片一库。</p>
+</blockquote>
+<h4 id="演变过程-cobar-gt-mycat-gt-jproxy"><a href="#演变过程-cobar-gt-mycat-gt-jproxy" class="headerlink" title="演变过程 cobar-&gt;mycat-&gt;jproxy"></a>演变过程 cobar-&gt;mycat-&gt;jproxy</h4><blockquote>
+<p>mycat是什么?</p>
+</blockquote>
+<p>​    简单的说，就是：一个彻底开源的，面向企业应用开发的“大数据库集群”。支持事务、ACID、可以替代Mysql的加强版数据库，一个的数据库中间件产品。</p>
+<ul>
+<li>其优势具有：<br>  1) 基于阿里开源的Cobar产品而研发，Cobar的稳定性、可靠性、优秀的架构和性能<br>  2) 拥有众多成熟的使用案例<br>  3) 强大的团队(其参与者都是5年以上资深软件工程师、架构师、DBA等)<br>  4) 开源，创新，持续更新</li>
+</ul>
+<blockquote>
+<p>盗一波图</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/dbproxy/mycat-jiagoux.png" alt="图mycat1"></p>
+<hr>
+<h2 id="4、-分组"><a href="#4、-分组" class="headerlink" title="4、 分组"></a>4、 分组</h2><h3 id="4-1-为什么分组？"><a href="#4-1-为什么分组？" class="headerlink" title="4.1 为什么分组？"></a>4.1 为什么分组？</h3><p>​    分组解决<code>可用性</code>问题</p>
+<blockquote>
+<p>mysql的ha 网洛上的都是vip漂移实现的</p>
+<p>盗一波图</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/keyong1.jpg" alt="图keyong1"><br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/keyong2.jpg" alt="图keyong2"></p>
+<blockquote>
+<p>方案一：MYSQL主从复制（单活）<br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-1.jpg" alt="图ms-1"><br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-1ppt.png" alt="图ms-1ppt"></p>
+<p>方案二：双主（单活），failover比单主简单<br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-2.jpg" alt="图ms-2"><br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-2ppt.png" alt="图ms-2ppt"></p>
+<p>方案三：双主配SAN存储（单活）<br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-3.jpg" alt="图ms-3"><br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-3ppt.png" alt="图ms-3ppt"></p>
+<p>方案四：DRBD 双主配DRBD （单活）<br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-4.jpg" alt="图ms-4"><br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-4ppt.png" alt="图ms-4ppt"></p>
+<p>方案五：NDB CLUSTER<br><img src="https://psiitoy.github.io/img/blog/sharding/jiangchengyao/ms-5.jpg" alt="图ms-5"></p>
+<p>共享存储? 不需要复制了 更高的一致性 </p>
+<p>真正的高并发场景，什么架构都抗不住，老老实实用缓存。</p>
+<p>需要大量读的场景尽量做到最终一致性。</p>
+</blockquote>
+<h3 id="4-2-同步，异步，半同步"><a href="#4-2-同步，异步，半同步" class="headerlink" title="4.2 同步，异步，半同步"></a>4.2 同步，异步，半同步</h3><p>   1) 异步复制 (mysql默认)</p>
+<blockquote>
+<p>Master将事件写入binlog，但并不知道Slave是否或何时已经接收且已处理。当Slave准备好才会向Master请求binlog。缺点：不能保证一些事件都能够被所有的Slave所接收。</p>
+</blockquote>
+<p>   2) 同步复制</p>
+<blockquote>
+<p>Master提交事务，直到事务在<code>所有的Slave</code>都已提交，此时才会返回客户端，事务执行完毕。缺点：完成一个事务可能会有很大的延迟。</p>
+</blockquote>
+<p>   3) 半同步复制</p>
+<blockquote>
+<p>半同步复制工作的机制处于同步和异步之间，Master的事务提交阻塞，<code>只要一个Slave</code>已收到该事务的事件且已记录。它不会等待所有的Slave都告知已收到，且它只是接收，并不用等其完全执行且提交。</p>
+</blockquote>
+<p>半同步复制的步骤：<br>i.当Slave主机连接到Master时，能够查看其是否处于半同步复制的机制。</p>
+<p>ii.当Master上开启半同步复制的功能时，至少应该有一个Slave开启其功能。此时，一个线程在Master上提交事务将受到阻塞，直到得知一个已开启半同步复制功能的Slave已收到此事务的所有事件，或等待超时。</p>
+<p>iii.当一个事务的事件都已写入其relay-log中且已刷新到磁盘上，Slave才会告知已收到。</p>
+<p>iv.如果等待超时，也就是Master没被告知已收到，此时Master会自动转换为异步复制的机制。当至少一个半同步的Slave赶上了，Master与其Slave自动转换为半同步复制的机制。</p>
+<p>v.半同步复制的功能要在Master，Slave都开启，半同步复制才会起作用；否则，只开启一边，它依然为异步复制。</p>
+<h3 id="4-3-ha方案"><a href="#4-3-ha方案" class="headerlink" title="4.3 ha方案"></a>4.3 ha方案</h3><h4 id="4-3-1-MHA"><a href="#4-3-1-MHA" class="headerlink" title="4.3.1 MHA"></a>4.3.1 <strong><em><a href="http://www.tuicool.com/articles/qaqyAjE" target="_blank" rel="noopener">MHA</a></em></strong></h4><h4 id="4-3-2-MMM"><a href="#4-3-2-MMM" class="headerlink" title="4.3.2 MMM"></a>4.3.2 MMM</h4><hr>
+<h2 id="5、-应用案例"><a href="#5、-应用案例" class="headerlink" title="5、 应用案例"></a>5、 应用案例</h2><h3 id="5-1-记录一次mongo迁移mysql的过程-分库分表使用jproxy"><a href="#5-1-记录一次mongo迁移mysql的过程-分库分表使用jproxy" class="headerlink" title="5.1 记录一次mongo迁移mysql的过程(分库分表使用jproxy)"></a>5.1 记录一次mongo迁移mysql的过程(分库分表使用jproxy)</h3><h4 id="mongo怎么了？跟分片无关的部分简单说。"><a href="#mongo怎么了？跟分片无关的部分简单说。" class="headerlink" title="mongo怎么了？跟分片无关的部分简单说。"></a>mongo怎么了？跟分片无关的部分简单说。</h4><p>​    mongo很好，只是业界并没有成熟的MongoDB运维经验，jd too。<br>    像高并发的系统 订单和库存 商品 还是拿nosql把，高并发的写,也不会打挂他,比如hbase，顶多GC频繁点，但是也是可用的。<br>    一致性完全可以CAS搞定，而不是mysql的排他锁。</p>
+<ul>
+<li>迁移数据库的一个方案<br>  1) 中心化(统一入口)<br>  2) 双写(先同步写mysql如果发生异常改异步，尽量避免服务不可用)<br>  3) 倒库(jproxy支持通过游标形式全量遍历库-逐个表操作，可以利用其异步同步数据)<br>  4) 数据校验<br>  5) 切库提供服务</li>
+</ul>
+<p><img src="https://psiitoy.github.io/img/blog/sharding/anli/qianku.png" alt="图 qianku"></p>
+<h4 id="去mongo-优化方案-此处引入了分片的概念"><a href="#去mongo-优化方案-此处引入了分片的概念" class="headerlink" title="去mongo+优化方案(此处引入了分片的概念)"></a>去mongo+优化方案(此处引入了分片的概念)</h4><p><img src="https://psiitoy.github.io/img/blog/sharding/anli/mongo-before.png" alt="图 mongo-before"><br><img src="https://psiitoy.github.io/img/blog/sharding/anli/mongo-after.png" alt="图 mongo-after"></p>
+<h4 id="压测与性能"><a href="#压测与性能" class="headerlink" title="压测与性能"></a>压测与性能</h4><p><img src="https://psiitoy.github.io/img/blog/sharding/anli/yace1.png" alt="图 yace1"><br><img src="https://psiitoy.github.io/img/blog/sharding/anli/yace2.png" alt="图 yace2"><br><img src="https://psiitoy.github.io/img/blog/sharding/anli/yace3.png" alt="图 yace3"><br><img src="https://psiitoy.github.io/img/blog/sharding/anli/ump1.png" alt="图 ump1"><br><img src="https://psiitoy.github.io/img/blog/sharding/anli/ump2.png" alt="图 ump2"></p>
+<h4 id="去mongo任务线"><a href="#去mongo任务线" class="headerlink" title="去mongo任务线"></a>去mongo任务线</h4><table>
+<thead>
+<tr>
+<th style="text-align:left">类型</th>
+<th style="text-align:left">任务</th>
+<th style="text-align:left">备注</th>
+<th style="text-align:left">影线系统</th>
+<th style="text-align:left">风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">design</td>
+<td style="text-align:left">海关迁移方案设计评审</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">design</td>
+<td style="text-align:left">分库分表技术选型</td>
+<td style="text-align:left">jproxy</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">apply</td>
+<td style="text-align:left">申请迁移相关应用(辅助系统)</td>
+<td style="text-align:left">跑批任务</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">apply</td>
+<td style="text-align:left">申请mysql集群</td>
+<td style="text-align:left">dbs系统</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">apply</td>
+<td style="text-align:left">申请jproxy集群</td>
+<td style="text-align:left">直接找接口人</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">apply</td>
+<td style="text-align:left">申请es集群</td>
+<td style="text-align:left">esm杰斯</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">trace表服务中心化</td>
+<td style="text-align:left">soa</td>
+<td style="text-align:left">center</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">涉及trace业务逻辑梳理，全部切换中心接口</td>
+<td style="text-align:left">接口完全适配</td>
+<td style="text-align:left">platform</td>
+<td style="text-align:left">低</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">回归测试，并线上走单验证一段时间</td>
+<td style="text-align:left">先预发后正式</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">实现mysql版本共2个表sql映射文件</td>
+<td style="text-align:left">基于自主研发的generator</td>
+<td style="text-align:left">center</td>
+<td style="text-align:left">低</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">mysql版本sql映射文件单元测试</td>
+<td style="text-align:left">基于自主研发的generator</td>
+<td style="text-align:left">center</td>
+<td style="text-align:left">低</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">trace表实现基于jproxy的分库分表</td>
+<td style="text-align:left">128个库(主) 1主3从</td>
+<td style="text-align:left">center</td>
+<td style="text-align:left">中</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">es分别按照商家id分片，保税区id分片，异步写，读开放jsf</td>
+<td style="text-align:left">2套集群4套索引</td>
+<td style="text-align:left">es</td>
+<td style="text-align:left">中</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">中心接口加入代理层，可利用开关切换读mongo/mysql/es</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">center</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">异步补偿mongo,mysql,es功能开发</td>
+<td style="text-align:left">基于jmq</td>
+<td style="text-align:left">platform</td>
+<td style="text-align:left">中</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">代理层实现mongo和mysql版本互为主被双写(mongo主)，异步写es</td>
+<td style="text-align:left">双11后mysql主</td>
+<td style="text-align:left">center</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">线上开双写(包括es)</td>
+<td style="text-align:left">两套es集群</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">中</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">倒库功能开发，数据校验功能开发</td>
+<td style="text-align:left">reactor</td>
+<td style="text-align:left">config</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">倒库，并进行数据校验</td>
+<td style="text-align:left">校验规则(特殊字段不校验)</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">对中心接口进行压测</td>
+<td style="text-align:left">线上，压测环境隔离(jsf别名)</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">coding</td>
+<td style="text-align:left">优化配置(mysql调整最大连接数,es使用filterCache)</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">对中心接口进行压测</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">高</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">升级后架构正式上线</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">监控切换mysql之后的接口性能</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">verify</td>
+<td style="text-align:left">监控切换mysql之后对相关依赖系统的影响</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">todo</td>
+<td style="text-align:left">停mongo写</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">todo</td>
+<td style="text-align:left">继续迁移海关mongo中其他表(以上均为trace表)</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+<tr>
+<td style="text-align:left">todo</td>
+<td style="text-align:left">彻底下线mongo数据库服务器，只保留mysql服务器</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">…</td>
+<td style="text-align:left">无</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-记录一次异构具有复杂分片规则数据库的过程"><a href="#5-2-记录一次异构具有复杂分片规则数据库的过程" class="headerlink" title="5.2 记录一次异构具有复杂分片规则数据库的过程"></a>5.2 记录一次异构具有复杂分片规则数据库的过程</h3><h4 id="5-2-1-难点"><a href="#5-2-1-难点" class="headerlink" title="5.2.1 难点"></a>5.2.1 难点</h4><p>​    交易库存复杂的分片规则，数据量大，更新频繁，一致性保证。</p>
+<blockquote>
+<p>回到本源，缓存+队列 </p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/sharding/anli/kucuntouminghua.png" alt="图 kucuntouminghua"></p>
+<h4 id="5-2-2-不跑题，我们就说分片部分，如何接手一个复杂分片规则的数据库？"><a href="#5-2-2-不跑题，我们就说分片部分，如何接手一个复杂分片规则的数据库？" class="headerlink" title="5.2.2 不跑题，我们就说分片部分，如何接手一个复杂分片规则的数据库？"></a>5.2.2 不跑题，我们就说分片部分，如何接手一个复杂分片规则的数据库？</h4><blockquote>
+<p>参考案例<a href="https://psiitoy.github.io/2017/02/25/[%E6%A1%88%E4%BE%8B]%E5%A6%82%E4%BD%95%E5%BC%82%E6%9E%84%E4%B8%80%E4%B8%AA%E6%95%B0%E5%8D%81%E4%BA%BF%E7%BA%A7%E5%88%AB%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93/">如何异构一个数十亿级别的数据库</a></p>
+<p>有多复杂?​    6000+表，28个库，4套分片规则。(解决方案 sharding-jdbc)</p>
+</blockquote>
+<hr>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/分布式/" rel="tag">#分布式</a>
+          
+            <a href="/tags/mysql/" rel="tag">#mysql</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/21/[分享]浅谈电商库存模型/" rel="next" title="[分享]浅谈电商库存模型">
+                <i class="fa fa-chevron-left"></i> [分享]浅谈电商库存模型
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/06/[集群搭建]记录使用docker搭建elasticsearch集群/" rel="prev" title="[集群搭建]记录使用docker搭建elasticsearch集群">
+                [集群搭建]记录使用docker搭建elasticsearch集群 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1、先抛出两个问题"><span class="nav-text">1、先抛出两个问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、-基本概念"><span class="nav-text">2、 基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-谈数据库分片需要首先确定以下概念"><span class="nav-text">2.1 谈数据库分片需要首先确定以下概念</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、-分片"><span class="nav-text">3、 分片</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-水平拆分，垂直拆分都是什么？"><span class="nav-text">3.1 水平拆分，垂直拆分都是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-为什么分表"><span class="nav-text">3.2 为什么分表?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-为什么分库"><span class="nav-text">2.3 为什么分库?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-分布式事务？"><span class="nav-text">3.4 分布式事务？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-5-小结"><span class="nav-text">3.5 小结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-6-如何自己实现分库分表？"><span class="nav-text">3.6 如何自己实现分库分表？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-7-SO，不需要我们亲自动手，其实你需要做的只是按照实际需求挑选而已。"><span class="nav-text">3.7 SO，不需要我们亲自动手，其实你需要做的只是按照实际需求挑选而已。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-8-重点介绍两个产品，先不说具体配置，只说思想"><span class="nav-text">3.8 重点介绍两个产品，先不说具体配置，只说思想</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#演变过程-cobar-gt-mycat-gt-jproxy"><span class="nav-text">演变过程 cobar-&gt;mycat-&gt;jproxy</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、-分组"><span class="nav-text">4、 分组</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-为什么分组？"><span class="nav-text">4.1 为什么分组？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-同步，异步，半同步"><span class="nav-text">4.2 同步，异步，半同步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-ha方案"><span class="nav-text">4.3 ha方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-1-MHA"><span class="nav-text">4.3.1 MHA</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-2-MMM"><span class="nav-text">4.3.2 MMM</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、-应用案例"><span class="nav-text">5、 应用案例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-记录一次mongo迁移mysql的过程-分库分表使用jproxy"><span class="nav-text">5.1 记录一次mongo迁移mysql的过程(分库分表使用jproxy)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#mongo怎么了？跟分片无关的部分简单说。"><span class="nav-text">mongo怎么了？跟分片无关的部分简单说。</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#去mongo-优化方案-此处引入了分片的概念"><span class="nav-text">去mongo+优化方案(此处引入了分片的概念)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#压测与性能"><span class="nav-text">压测与性能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#去mongo任务线"><span class="nav-text">去mongo任务线</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-记录一次异构具有复杂分片规则数据库的过程"><span class="nav-text">5.2 记录一次异构具有复杂分片规则数据库的过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-1-难点"><span class="nav-text">5.2.1 难点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-2-不跑题，我们就说分片部分，如何接手一个复杂分片规则的数据库？"><span class="nav-text">5.2.2 不跑题，我们就说分片部分，如何接手一个复杂分片规则的数据库？</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

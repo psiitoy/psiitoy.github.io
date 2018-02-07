@@ -1,0 +1,855 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="es," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文总结了 苏宁、美团点评、58到家、百度 在Elastic{ON}大会上分享的，基于Elasticsearch实践的几个案例。感谢这些热衷分享的工程师们的开源精神。">
+<meta name="keywords" content="es">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[对比]Elastic{ON}基于Elasticsearch实践的几个案例">
+<meta property="og:url" content="https://psiitoy.github.io/2017/08/23/[对比]Elastic{ON}基于Elasticsearch实践的几个案例/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="本文总结了 苏宁、美团点评、58到家、百度 在Elastic{ON}大会上分享的，基于Elasticsearch实践的几个案例。感谢这些热衷分享的工程师们的开源精神。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.095Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[对比]Elastic{ON}基于Elasticsearch实践的几个案例">
+<meta name="twitter:description" content="本文总结了 苏宁、美团点评、58到家、百度 在Elastic{ON}大会上分享的，基于Elasticsearch实践的几个案例。感谢这些热衷分享的工程师们的开源精神。">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/08/23/[对比]Elastic{ON}基于Elasticsearch实践的几个案例/"/>
+
+  <title> [对比]Elastic{ON}基于Elasticsearch实践的几个案例 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [对比]Elastic{ON}基于Elasticsearch实践的几个案例
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-08-23T21:15:06+08:00" content="2017-08-23">
+              2017-08-23
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/对比/" itemprop="url" rel="index">
+                    <span itemprop="name">对比</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/08/23/[对比]Elastic{ON}基于Elasticsearch实践的几个案例/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/08/23/[对比]Elastic{ON}基于Elasticsearch实践的几个案例/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文总结了 <code>苏宁</code>、<code>美团点评</code>、<code>58到家</code>、<code>百度</code> 在Elastic{ON}大会上分享的，基于Elasticsearch实践的几个案例。感谢这些热衷分享的工程师们的开源精神。</p>
+<a id="more"></a>
+<h2 id="一、基于Kibana和ES的苏宁实时日志分析平台-苏宁"><a href="#一、基于Kibana和ES的苏宁实时日志分析平台-苏宁" class="headerlink" title="一、基于Kibana和ES的苏宁实时日志分析平台[苏宁]"></a>一、基于Kibana和ES的苏宁实时日志分析平台[苏宁]</h2><h3 id="1-1-架构"><a href="#1-1-架构" class="headerlink" title="1.1 架构"></a>1.1 架构</h3><p><code>Flume</code>(采集⽇志)+<code>Kafka</code>(数据通道,<code>ES river</code>插件消费)+<code>Elasticsearch</code>+<code>Kibana</code>的部署架构。</p>
+<h3 id="1-2-总结"><a href="#1-2-总结" class="headerlink" title="1.2 总结"></a>1.2 总结</h3><ul>
+<li><p>第一次升级主要优化</p>
+<ul>
+<li>提出client节点(网关节点)的概念并分别部署到VM，client节点(只负责检索)，data节点(负责索引) 。</li>
+<li>关闭<code>_all</code>字段(节省存储空间、提升索引速度)。</li>
+<li>按业务进行垂直拆分</li>
+</ul>
+</li>
+<li><p>第二次升级主要优化</p>
+<ul>
+<li>使用<code>tribe</code>做多集群路由</li>
+<li><code>data</code>节点全部使用物理机</li>
+<li>按路径可降级</li>
+<li>按分析类型(统计型、检索型)进行集群拆分</li>
+<li>统计型集群使用<code>SSD</code></li>
+</ul>
+</li>
+<li><p>第三次升级主要优化</p>
+<ul>
+<li>同时支持按业务、数据类型两个维度划分集群。</li>
+<li>接入流程自动化</li>
+<li><code>Cold/Hot</code> 节点不同硬件配置，历史数据低峰期迁移冷节点。</li>
+<li>Exception数据单独存储，长期保留。</li>
+<li>多<code>kafka</code></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="二、搜索平台化实践之路-美团点评"><a href="#二、搜索平台化实践之路-美团点评" class="headerlink" title="二、搜索平台化实践之路[美团点评]"></a>二、搜索平台化实践之路[美团点评]</h2><h3 id="2-1-架构"><a href="#2-1-架构" class="headerlink" title="2.1 架构"></a>2.1 架构</h3><ul>
+<li>集群部署的架构为<ul>
+<li>[user]业务应用集群</li>
+<li>[man]数据库集群</li>
+<li>[man]汇总慢日志集群</li>
+<li>[man]集群监控集群</li>
+<li>各集群节点全部部署agent，同时对业务及群进行日志采集(含慢日志)</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2-总结"><a href="#2-2-总结" class="headerlink" title="2.2 总结"></a>2.2 总结</h3><ul>
+<li><p>2016Q3</p>
+<ul>
+<li>统一管理平台</li>
+<li>Java客户端组件</li>
+<li>集群多写组件</li>
+<li>权限插件</li>
+</ul>
+</li>
+<li><p>2016Q4</p>
+<ul>
+<li>客户端读写监控</li>
+<li>慢查询监控</li>
+<li>集群准实时监控</li>
+<li>支持ES5.x版本</li>
+</ul>
+</li>
+<li><p>2017Q1</p>
+<ul>
+<li>Sql客户端和操作界面</li>
+<li>多数据源自动化导入ES</li>
+<li>统计管理理    </li>
+</ul>
+</li>
+</ul>
+<h2 id="三、58到家ES服务化实践-58到家"><a href="#三、58到家ES服务化实践-58到家" class="headerlink" title="三、58到家ES服务化实践[58到家]"></a>三、58到家ES服务化实践[58到家]</h2><h3 id="3-1-架构"><a href="#3-1-架构" class="headerlink" title="3.1 架构"></a>3.1 架构</h3><p>中间件化架构</p>
+<ul>
+<li><code>写</code>操作调用集中式服务(RPC+ORM+@ANO)</li>
+<li><code>读</code>操作经过DSLHandler进行优化(分布式)</li>
+<li>权限模块定位客户端连接那个集群。</li>
+</ul>
+<h3 id="3-2-总结"><a href="#3-2-总结" class="headerlink" title="3.2 总结"></a>3.2 总结</h3><p>总结</p>
+<ul>
+<li><p>服务化构建</p>
+<blockquote>
+<p>RPC，ORM，约束</p>
+</blockquote>
+</li>
+<li><p>地理理类集群</p>
+<blockquote>
+<p>读写密集，减小数据集、内存、业务折中</p>
+</blockquote>
+</li>
+<li><p>商品类集群</p>
+<blockquote>
+<p>查询快，隔离、路由、减少字段、定期优化</p>
+</blockquote>
+</li>
+<li><p>日志类集群</p>
+<blockquote>
+<p>写频繁，批量、减少副本、角色分配、索引拆分</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="四、百度对Elasticsearch的优化改进-百度"><a href="#四、百度对Elasticsearch的优化改进-百度" class="headerlink" title="四、百度对Elasticsearch的优化改进[百度]"></a>四、百度对Elasticsearch的优化改进[百度]</h2><h3 id="4-1-功能增强"><a href="#4-1-功能增强" class="headerlink" title="4.1 功能增强"></a>4.1 功能增强</h3><ul>
+<li>功能改进<ul>
+<li>分布式SQL查询层</li>
+<li>权限管理</li>
+<li>Online schema change</li>
+<li><code>DistributedLog</code> 数据一致性</li>
+<li>多集群数据同步</li>
+<li>多租户资源隔离</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-2-总结"><a href="#4-2-总结" class="headerlink" title="4.2 总结"></a>4.2 总结</h3><ul>
+<li><p>分布式SQL查询层</p>
+<ul>
+<li>提供标准SQL接口</li>
+<li>兼容MySQL协议</li>
+<li>兼容原始HTTP协议</li>
+</ul>
+</li>
+<li><p>权限管理系统</p>
+<ul>
+<li>如果是HttpClient-ES Engine走<code>ActionFilter</code>-&gt;AuthService</li>
+<li>如果是MysqlClient-SQL Enging走Analyzer-&gt;AuthService</li>
+</ul>
+</li>
+<li><p>Online schema change (Baidu-ES reindex)</p>
+<ul>
+<li>每个分片内部本地<code>reindex</code></li>
+<li>增加mapping version，插入时使用最新mapping，并使用internal version，防止覆盖，后台线程定期检测Mapping version增加，自动reindex</li>
+<li>动态调整reindex速度</li>
+<li>节点宕机、分片迁移、reindex自动恢复</li>
+<li>无需新建index，无需额外网络IO和磁盘空间</li>
+<li>支持在线服务，支持update</li>
+<li>查看每个分片reindex进度</li>
+</ul>
+</li>
+<li><p>DistributedLog 数据一致性</p>
+<ul>
+<li>需求背景<ul>
+<li>糯米、钱包等业务对ES服务可靠性要求很高</li>
+<li>不能容忍脑裂、数据不一致、丢数据等情况的发生</li>
+</ul>
+</li>
+<li>需解决的问题<ul>
+<li>元数据一致性（脑裂）</li>
+<li>强一致写</li>
+<li>强一致读</li>
+</ul>
+</li>
+<li>解决方案：DistributedLog<ul>
+<li>Twitter 开源分布式日志服务</li>
+<li>高可用，高性能，强一致，可扩展</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>多集群数据同步</p>
+<blockquote>
+<p>Es Mirror Maker分发(主备) + version乐观锁(解决主备切时的冲突)</p>
+</blockquote>
+</li>
+<li><p>多租户资源隔离</p>
+<ul>
+<li>需求背景<ul>
+<li>多个业务使用公共集群，CPU、内存、IO、JVM等相互影响</li>
+<li>云化部署</li>
+</ul>
+</li>
+<li>设计实现<ul>
+<li>每台物理机启动多个ES进程组成大集群</li>
+<li><code>cgroup</code> 对每个ES进程进行CPU、内存、IO等隔离</li>
+<li>引入tenement 概念，分配不同的ES节点为每个租户创建自己的虚拟集群</li>
+<li>Allocation filter 限制租户的index只能创建在自己的节点上</li>
+<li>每个租户分配不同DB，隔离访问权限</li>
+<li>username@tenement，租户命名空间隔离租户信息</li>
+<li>根据租户ID隔离settings，templates、nodes等</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/es/" rel="tag">#es</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/17/[源码]Elasticsearch源码6(5.4插件开发)/" rel="next" title="[源码]Elasticsearch源码6(5.4插件开发)">
+                <i class="fa fa-chevron-left"></i> [源码]Elasticsearch源码6(5.4插件开发)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/22/[读书笔记]sed and awk(2nd Edition)/" rel="prev" title="[读书笔记]sed and awk(2nd Edition)">
+                [读书笔记]sed and awk(2nd Edition) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、基于Kibana和ES的苏宁实时日志分析平台-苏宁"><span class="nav-text">一、基于Kibana和ES的苏宁实时日志分析平台[苏宁]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-架构"><span class="nav-text">1.1 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-总结"><span class="nav-text">1.2 总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、搜索平台化实践之路-美团点评"><span class="nav-text">二、搜索平台化实践之路[美团点评]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-架构"><span class="nav-text">2.1 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-总结"><span class="nav-text">2.2 总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、58到家ES服务化实践-58到家"><span class="nav-text">三、58到家ES服务化实践[58到家]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-架构"><span class="nav-text">3.1 架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-总结"><span class="nav-text">3.2 总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四、百度对Elasticsearch的优化改进-百度"><span class="nav-text">四、百度对Elasticsearch的优化改进[百度]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-功能增强"><span class="nav-text">4.1 功能增强</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-总结"><span class="nav-text">4.2 总结</span></a></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

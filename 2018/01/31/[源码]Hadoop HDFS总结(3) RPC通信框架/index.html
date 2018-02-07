@@ -1,0 +1,734 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="hadoop," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="Hadoop HDFS RPC通信框架">
+<meta name="keywords" content="hadoop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[源码]Hadoop HDFS RPC通信框架">
+<meta property="og:url" content="https://psiitoy.github.io/2018/01/31/[源码]Hadoop HDFS总结(3) RPC通信框架/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="Hadoop HDFS RPC通信框架">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-3-1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-3-2.png">
+<meta property="og:updated_time" content="2018-02-01T02:57:37.345Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[源码]Hadoop HDFS RPC通信框架">
+<meta name="twitter:description" content="Hadoop HDFS RPC通信框架">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/hadoop/hadoop-3-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2018/01/31/[源码]Hadoop HDFS总结(3) RPC通信框架/"/>
+
+  <title> [源码]Hadoop HDFS RPC通信框架 | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [源码]Hadoop HDFS RPC通信框架
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2018-01-31T11:00:00+08:00" content="2018-01-31">
+              2018-01-31
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2018/01/31/[源码]Hadoop HDFS总结(3) RPC通信框架/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2018/01/31/[源码]Hadoop HDFS总结(3) RPC通信框架/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Hadoop HDFS RPC通信框架</p>
+<a id="more"></a>
+<hr>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>单个 HDFS 集群中可能存在成百上千个 DataNode ，但默认情况下 NameNode 只有一个 , 各个节点不断的进行内部通信，如果不能快速的处理掉通信消息，可能会导致掉节点，或者数据传输缓慢等问题。因此HDFS内部集群对内部RPC通信具有较高的性能要求。</p>
+<h2 id="Protobuf简介"><a href="#Protobuf简介" class="headerlink" title="Protobuf简介"></a>Protobuf简介</h2><p>在 HDFS 中，为了提升内部通信的传输效率，整个RPC通信框架使用 Google 的 Protobuf 序列化框架进行数据传输。为了方便后续理解，这里先对 Protobuf 进行简单介绍。</p>
+<h2 id="数据传输"><a href="#数据传输" class="headerlink" title="数据传输"></a>数据传输</h2><p>Protobuf 首先是一个跨语言的数据传输框架。把它和 XML 和 JSON进行对比可以看出</p>
+<p><table><thead><tr><th>语言</th><th>特点</th><th>可读性</th><th>数据Size</th><th>解析效率</th></tr></thead><tbody><tr><td>Protobuf</td><td>将数据内容解析成纯字节形式传输</td><td>数据以字节形式存在，不具备可读性</td><td>占用数据量少</td><td>直接读取数据内容，效率高</td></tr><tr><td style="text-align:center">XML和JSON</td><td style="text-align:center">引入额外文本构造出格式化数据</td><td style="text-align:center">额外文本使得数据具备良好的可读性</td><td style="text-align:center">数据以字符形式存在，且额外文本占用大量空间</td><td style="text-align:center">需要解析剔除额外数据，效率低</td></tr></tbody></table><br>XML和Json都是将数据封装成一个格式化文本，因此在必要的传输数据之外，还有大量的额外文本进行状态描述。而 Protobuf 通过将数据字段序列化成为一串不可读的字节码，同XML和Json相比，对于同样的数据，它所需要传输的数据量更小，解析的速度更快。<br>Protobuf 也是一门天生的跨语言数据传输框架。 对于不同的语言，都用同一个 .proto 的文件进行数据描述，如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">message User &#123;</span><br><span class="line">    int32 id = 2; </span><br><span class="line">    string name = 1;</span><br><span class="line">    string email = 3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>代码中的 User 数据，可以通过 Google 或者三方的 protobuf 处理工具，被转化为特定编程语言下的数据对象。</p>
+<p>例如，在Java代码中，通过 .proto 文件生成一个 AddressBook 数据类，那么生成的 Java 文件中会自带 mergeFrom 和 writeTo 方法如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// 从输入流中反序列化数据</span><br><span class="line">AddressBook.Builder addressBook = AddressBook.newBuilder();</span><br><span class="line">addressBook.mergeFrom(new FileInputStream(args[0]));</span><br><span class="line"></span><br><span class="line">// 序列化数据到输入流</span><br><span class="line">FileOutputStream output = new FileOutputStream(args[0]);</span><br><span class="line">addressBook.build().writeTo(output);</span><br></pre></td></tr></table></figure></p>
+<p>通过Protobuf内部的IO逻辑，我们可以将指定的数据转化为少量的字节码进行传输，从而提升整体的传输效率。</p>
+<p>对于任意语言，只要以同样的方式记录和读取同一份字节码数据就可以得到同样的数据对象，从而保证序列化数据的可还原性。同时，在数据的序列化过程中，由于没有额外文本的参与，也不需要保持数据在传输过程中的可读性，因此对于同一个数据，Protobuf拥有比XML和Json更小的数据量和更快的解析速度。</p>
+<h2 id="RPC调用"><a href="#RPC调用" class="headerlink" title="RPC调用"></a>RPC调用</h2><p>Protobuf 除了实现数据的传输作用以外，还实现了一套RPC远程调用框架。<br>定义一个 .proto 文件如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">option java_generic_services = true;</span><br><span class="line">service ReconfigurationProtocolService &#123;</span><br><span class="line">    rpc getReconfigurationStatus(GetReconfigurationStatusRequestProto)</span><br><span class="line">      returns(GetReconfigurationStatusResponseProto);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>使用Protobuf编译工具进行处理之后，可以得到一个 ReconfigurationProtocolService 接口，例如上方代码对应的接口中会有一个叫做 getReconfigurationStatus,参数类型为GetReconfigurationStatusRequestProto, 返回值为GetReconfigurationStatusResponseProto 的方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 构造BlockingService</span><br><span class="line">ReconfigurationProtocolServerSideTranslatorPB reconfigurationProtocolXlator</span><br><span class="line">        = new ReconfigurationProtocolServerSideTranslatorPB(this);</span><br><span class="line">BlockingService reconfigurationPbService = ReconfigurationProtocolService</span><br><span class="line">        .newReflectiveBlockingService(reconfigurationProtocolXlator);</span><br><span class="line"></span><br><span class="line">// 调用BlockingService</span><br><span class="line">service.callBlockingMethod(methodDescriptor, null, param);</span><br></pre></td></tr></table></figure>
+<p>在 Java 文件中，通过动态代理得到一个BlockingService对象，内部包裹一个实现了 ReconfigurationProtocolService.BlockingInterface 接口的对象。</p>
+<p>当需要使用RPC服务时，系统通过传输需要调用的方法名和相关的调用参数，使用 BlockingService::callBlockingMethod,就可以在Server端解析调用逻辑，实现RPC远程调用。</p>
+<h2 id="RPC通信的逻辑实现"><a href="#RPC通信的逻辑实现" class="headerlink" title="RPC通信的逻辑实现"></a>RPC通信的逻辑实现</h2><p>言归正传，我们回到 HDFS 的内部通信机制本身。<br><img src="https://psiitoy.github.io/img/blog/hadoop/hadoop-3-1.png" alt="图3-1"><br>如上图中，Proxy和Impl是对同一个RPC调用接口的实现类，当Proxy中的接口被调用时，通过Client发送消息到 Server ，Server 会按照标准数据格式进行解析，再调用Server侧的 Impl方法进行执行，并返回结果数据。Client 发送消息到 Server 的过程对于接口访问而言是透明的，对于使用者来说，他在本地执行 Proxy 的接口，会得到具有相同接口的 Impl 的调用结果。</p>
+<p>不同的RPC框架的具体实现逻辑不尽相同，在HDFS中，RPC.Server类扮演RPC框架中的 Server 角色，处理响应内部通信请求； Client 类扮演RPC框架中的 Client 角色，负责调用消息的发送和结果数据接收。</p>
+<p>接下来会针对 Server 和 Client 的进行代码逻辑的走读。</p>
+<h2 id="Server"><a href="#Server" class="headerlink" title="Server"></a>Server</h2><p>RPC.Server的源码路径是 $src/hadooop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java。</p>
+<p>在 RPC 类中有一个 Builder 类负责构造 RPC.Server，在构造方法中我们看到:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public Server build() throws IOException, HadoopIllegalArgumentException &#123;</span><br><span class="line">    return getProtocolEngine(this.protocol, this.conf).getServer(</span><br><span class="line">          this.protocol, this.instance, this.bindAddress, this.port,</span><br><span class="line">          this.numHandlers, this.numReaders, this.queueSizePerHandler,</span><br><span class="line">          this.verbose, this.conf, this.secretManager, this.portRangeConfig);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>默认情况下，通过 getProtocolEngine() 都是得到一个 ProtobufRpcEngine 对象，再通过ProtobufRpcEngine::getServer构造出 ProtobufRpcEngine.Server 对象。</p>
+<p>ProtobufRpcEngine.Server 是 Server 的子类，整个内部通信机制在 Server 类中就已经实现了，下面是 Server 中的数据处理流程<br><img src="https://psiitoy.github.io/img/blog/hadoop/hadoop-3-2.png" alt="图3-2"><br>Server类中使用了四种类型的线程类，分别是Listener,Reader,Handler和Responder。如上图所示，为了方便表示各个线程间的通信逻辑，使用泳道代表着对应类型的线程类操作时锁使用的关键方法</p>
+<h2 id="Listener"><a href="#Listener" class="headerlink" title="Listener"></a>Listener</h2><p>Listener 作为单线程任务负责监听指定端口的socket的 ACCEPT 请求，当新的 socket链接到来时，将其封装成一个 Connection 对象，通过addConnection添加Reader的处理队列中。</p>
+<p>Server 中只有一个 Listener 线程负责接收新的socket请求，但有多个 Reader 线程，在Listener::doAccept 中会根据以下代码尽可能将 Connection 平均分配到各个 Reader中，让多个线程可以同时读取不同的 socket 数据，从而避免Listener单线程引起的性能瓶颈。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Reader getReader() &#123;</span><br><span class="line">      currentReader = (currentReader + 1) % readers.length;</span><br><span class="line">      return readers[currentReader];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Reader"><a href="#Reader" class="headerlink" title="Reader"></a>Reader</h2><p>Reader负责内部通信数据的解析工作，它不断尝试从Connection所包装的socket对象中读取数据。当发现某个 socket 可读时，通过 readAndProcess-&gt; processOneRpc 处理到来的消息。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">private void processOneRpc(ByteBuffer bb) throws IOException, WrappedRpcServerException, InterruptedException &#123;</span><br><span class="line">    final RpcWritable.Buffer buffer = RpcWritable.Buffer.wrap(bb);</span><br><span class="line">    final RpcRequestHeaderProto header = getMessage(RpcRequestHeaderProto.getDefaultInstance(), buffer);</span><br><span class="line">    callId = header.getCallId();</span><br><span class="line">    if (callId &lt; 0) &#123; </span><br><span class="line">        processRpcOutOfBandRequest(header, buffer);</span><br><span class="line">    &#125; else if(!connectionContextRead) &#123;</span><br><span class="line">        throw new WrappedRpcServerException();</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        processRpcRequest(header, buffer);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从上面的代码可以看出，每次从 socket 请求传来的数据请求都必然带着一个 RpcRequestHeaderProto 对象，这个对象中封装着后续参数的相关信息，就像 Http 协议中的头信息。</p>
+<p>当 socket 初次建立链接时，需要通过 procesRpcOutOfBandRequest 进行链接初始化，初始化时的 callId &lt; 0。初始化完成之后,后续请求通过 processRpcRequest 进行消费。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">private void processRpcRequest(RpcRequestHeaderProto header,</span><br><span class="line">    RpcWritable.Buffer buffer) throws RpcServerException,</span><br><span class="line">    InterruptedException &#123;</span><br><span class="line">  Class&lt;? extends Writable&gt; rpcRequestClass = </span><br><span class="line">      getRpcRequestWrapper(header.getRpcKind());</span><br><span class="line">  if (rpcRequestClass == null) &#123;</span><br><span class="line">    LOG.warn(&quot;Unknown rpc kind &quot;  + header.getRpcKind() + </span><br><span class="line">        &quot; from client &quot; + getHostAddress());</span><br><span class="line">    final String err = &quot;Unknown rpc kind in rpc header&quot;  + </span><br><span class="line">        header.getRpcKind();</span><br><span class="line">    throw new FatalRpcServerException(</span><br><span class="line">        RpcErrorCodeProto.FATAL_INVALID_RPC_HEADER, err);</span><br><span class="line">  &#125;</span><br><span class="line">  Writable rpcRequest;</span><br><span class="line">  try &#123; //Read the rpc request</span><br><span class="line">    rpcRequest = buffer.newInstance(rpcRequestClass, conf);</span><br><span class="line">  &#125; catch (RpcServerException rse) &#123; // lets tests inject failures.</span><br><span class="line">    throw rse;</span><br><span class="line">  &#125; catch (Throwable t) &#123; // includes runtime exception from newInstance</span><br><span class="line">    LOG.warn(&quot;Unable to read call parameters for client &quot; +</span><br><span class="line">             getHostAddress() + &quot;on connection protocol &quot; +</span><br><span class="line">        this.protocolName + &quot; for rpcKind &quot; + header.getRpcKind(),  t);</span><br><span class="line">    String err = &quot;IPC server unable to read call parameters: &quot;+ t.getMessage();</span><br><span class="line">    throw new FatalRpcServerException(</span><br><span class="line">        RpcErrorCodeProto.FATAL_DESERIALIZING_REQUEST, err);</span><br><span class="line">  &#125;</span><br><span class="line">    </span><br><span class="line">  TraceScope traceScope = null;</span><br><span class="line">  if (header.hasTraceInfo()) &#123;</span><br><span class="line">    if (tracer != null) &#123;</span><br><span class="line">      // If the incoming RPC included tracing info, always continue the</span><br><span class="line">      // trace</span><br><span class="line">      SpanId parentSpanId = new SpanId(</span><br><span class="line">          header.getTraceInfo().getTraceId(),</span><br><span class="line">          header.getTraceInfo().getParentId());</span><br><span class="line">      traceScope = tracer.newScope(</span><br><span class="line">          RpcClientUtil.toTraceName(rpcRequest.toString()),</span><br><span class="line">          parentSpanId);</span><br><span class="line">      traceScope.detach();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  CallerContext callerContext = null;</span><br><span class="line">  if (header.hasCallerContext()) &#123;</span><br><span class="line">    callerContext =</span><br><span class="line">        new CallerContext.Builder(header.getCallerContext().getContext())</span><br><span class="line">            .setSignature(header.getCallerContext().getSignature()</span><br><span class="line">                .toByteArray())</span><br><span class="line">            .build();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  RpcCall call = new RpcCall(this, header.getCallId(),</span><br><span class="line">      header.getRetryCount(), rpcRequest,</span><br><span class="line">      ProtoUtil.convert(header.getRpcKind()),</span><br><span class="line">      header.getClientId().toByteArray(), traceScope, callerContext);</span><br><span class="line"></span><br><span class="line">  // Save the priority level assignment by the scheduler</span><br><span class="line">  call.setPriorityLevel(callQueue.getPriorityLevel(call));</span><br><span class="line"></span><br><span class="line">  try &#123;</span><br><span class="line">    internalQueueCall(call);</span><br><span class="line">  &#125; catch (RpcServerException rse) &#123;</span><br><span class="line">    throw rse;</span><br><span class="line">  &#125; catch (IOException ioe) &#123;</span><br><span class="line">    throw new FatalRpcServerException(</span><br><span class="line">        RpcErrorCodeProto.ERROR_RPC_SERVER, ioe);</span><br><span class="line">  &#125;</span><br><span class="line">  incRpcCount();  // Increment the rpc count</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里根据RpcRequestHeaderProto中包含的body类型解析出对应的数据类，将其封装成一个 RpcCall 对象，放入 Handler 的消费队列中。</p>
+<h2 id="Handler"><a href="#Handler" class="headerlink" title="Handler"></a>Handler</h2><p>Handler 线程负责具体指令的执行工作。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">final Call call = callQueue.take(); // pop the queue; maybe blocked here</span><br><span class="line">CurCall.set(call);</span><br><span class="line">// always update the current call context</span><br><span class="line">CallerContext.setCurrent(call.callerContext);</span><br><span class="line">UserGroupInformation remoteUser = call.getRemoteUser();</span><br><span class="line">if (remoteUser != null) &#123;</span><br><span class="line">    remoteUser.doAs(call);</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    call.run();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在 Handler 的循环队列中，不断从 callQueue 中获取需要消费的任务信息，然后通过 call.run() 进行任务执行。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">public Void run() throws Exception &#123;</span><br><span class="line">  if (!connection.channel.isOpen()) &#123;</span><br><span class="line">    Server.LOG.info(Thread.currentThread().getName() + &quot;: skipped &quot; + this);</span><br><span class="line">    return null;</span><br><span class="line">  &#125;</span><br><span class="line">  Writable value = null;</span><br><span class="line">  ResponseParams responseParams = new ResponseParams();</span><br><span class="line"></span><br><span class="line">  try &#123;</span><br><span class="line">    value = call(</span><br><span class="line">        rpcKind, connection.protocolName, rpcRequest, timestamp);</span><br><span class="line">  &#125; catch (Throwable e) &#123;</span><br><span class="line">    populateResponseParamsOnError(e, responseParams);</span><br><span class="line">  &#125;</span><br><span class="line">  if (!isResponseDeferred()) &#123;</span><br><span class="line">    setupResponse(this, responseParams.returnStatus,</span><br><span class="line">        responseParams.detailedErr,</span><br><span class="line">        value, responseParams.errorClass, responseParams.error);</span><br><span class="line">    sendResponse();</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    if (LOG.isDebugEnabled()) &#123;</span><br><span class="line">      LOG.debug(&quot;Deferring response for callId: &quot; + this.callId);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return null;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在 RpcCall::run 中我们看到，系统实际上是通过Server::call方法执行的，这个方法在 RPC.Server 中被实现。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">static &#123; // Register the rpcRequest deserializer for ProtobufRpcEngine</span><br><span class="line">    org.apache.hadoop.ipc.Server.registerProtocolEngine(</span><br><span class="line">        RPC.RpcKind.RPC_PROTOCOL_BUFFER, RpcProtobufRequest.class,</span><br><span class="line">        new Server.ProtoBufRpcInvoker());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Override</span><br><span class="line">public Writable call(RPC.RpcKind rpcKind, String protocol,</span><br><span class="line">        Writable rpcRequest, long receiveTime) throws Exception &#123;</span><br><span class="line">    return getRpcInvoker(rpcKind).call(this, protocol, rpcRequest,</span><br><span class="line">          receiveTime);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// Server.ProtoBufRpcInvoker</span><br><span class="line">public Writable call(RPC.Server server, String connectionProtocolName,</span><br><span class="line">          Writable writableRequest, long receiveTime) throws Exception &#123;</span><br><span class="line">    RpcProtobufRequest request = (RpcProtobufRequest) writableRequest;</span><br><span class="line">    RequestHeaderProto rpcRequest = request.getRequestHeader();</span><br><span class="line">    String methodName = rpcRequest.getMethodName();</span><br><span class="line">    </span><br><span class="line">    String declaringClassProtoName = </span><br><span class="line">            rpcRequest.getDeclaringClassProtocolName();</span><br><span class="line">    long clientVersion = rpcRequest.getClientProtocolVersion();</span><br><span class="line">    </span><br><span class="line">    ProtoClassProtoImpl protocolImpl = getProtocolImpl(server, </span><br><span class="line">                              declaringClassProtoName, clientVersion);</span><br><span class="line">    BlockingService service = (BlockingService) protocolImpl.protocolImpl;</span><br><span class="line">    result = service.callBlockingMethod(methodDescriptor, null, param);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从源码中可以看到，RPC.Server::call经过层层路径，最终在Server.ProtoBufRpcInvoker 根据传入的数据找到对应的BlockingService,利用 Protobuf (这里没有使用Protobuf内置的RpcChannel,而是自己手动调用BlockingService::callBlockingMethod)实现方法的调用。</p>
+<h2 id="Responder"><a href="#Responder" class="headerlink" title="Responder"></a>Responder</h2><p>在 Reponder 线程的 while 循环中，我们看到当socket可写时，会尝试调用 doAsyncWrite-&gt;processResponse 进行写入操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">private boolean processResponse(LinkedList&lt;RpcCall&gt; responseQueue,</span><br><span class="line">                                    boolean inHandler) throws IOException &#123;</span><br><span class="line">    call = responseQueue.removeFirst();</span><br><span class="line">    SocketChannel channel = call.connection.channel;</span><br><span class="line">    int numBytes = channelWrite(channel, call.rpcResponse);</span><br><span class="line">    if (numBytes &lt; 0) &#123;</span><br><span class="line">        return true;</span><br><span class="line">    &#125;</span><br><span class="line">    if (!call.rpcResponse.hasRemaining()) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        call.connection.responseQueue.addFirst(call);</span><br><span class="line">    &#125;</span><br><span class="line">    return done;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private int channelWrite(WritableByteChannel channel, </span><br><span class="line">                           ByteBuffer buffer) throws IOException &#123;</span><br><span class="line">    int count =  (buffer.remaining() &lt;= NIO_BUFFER_LIMIT) ?</span><br><span class="line">                 channel.write(buffer) : channelIO(null, channel, buffer);</span><br><span class="line">    if (count &gt; 0) &#123;</span><br><span class="line">        rpcMetrics.incrSentBytes(count);</span><br><span class="line">    &#125;</span><br><span class="line">    return count;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Responder会将得到的 response 写入socket 的输出流中，返回给Client。</p>
+<h2 id="Client"><a href="#Client" class="headerlink" title="Client"></a>Client</h2><p>Client 的源码路径是 $src/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java 。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@Override</span><br><span class="line">@SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">public &lt;T&gt; ProtocolProxy&lt;T&gt; getProxy(Class&lt;T&gt; protocol, long clientVersion,</span><br><span class="line">      InetSocketAddress addr, UserGroupInformation ticket, Configuration conf,</span><br><span class="line">      SocketFactory factory, int rpcTimeout, RetryPolicy connectionRetryPolicy,</span><br><span class="line">      AtomicBoolean fallbackToSimpleAuth) throws IOException &#123;</span><br><span class="line"></span><br><span class="line">    final Invoker invoker = new Invoker(protocol, addr, ticket, conf, factory,</span><br><span class="line">        rpcTimeout, connectionRetryPolicy, fallbackToSimpleAuth);</span><br><span class="line">    return new ProtocolProxy&lt;T&gt;(protocol, (T) Proxy.newProxyInstance(</span><br><span class="line">        protocol.getClassLoader(), new Class[]&#123;protocol&#125;, invoker), false);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Client 端通过 ProtobufRpcEngine::getProxy 构建出一个动态代理的接口对象。当 Client 访问接口时，通过 Invoker 类通知 Client 发送请求给 Server。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public Message invoke(Object proxy, final Method method, Object[] args) throws ServiceException &#123;</span><br><span class="line">    RequestHeaderProto rpcRequestHeader = constructRpcRequestHeader(method);</span><br><span class="line">    final Message theRequest = (Message) args[1];</span><br><span class="line">    final RpcWritable.Buffer val;</span><br><span class="line">    val = (RpcWritable.Buffer) client.call(RPC.RpcKind.RPC_PROTOCOL_BUFFER,</span><br><span class="line">            new RpcProtobufRequest(rpcRequestHeader, theRequest), remoteId,</span><br><span class="line">            fallbackToSimpleAuth);</span><br><span class="line">    return getReturnMessage(method, val);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Invoker 会根据访问接口的签名信息构造出一个 RequestHeaderProto 对象，在上一小节中，我们看到当 Server 接收到 socket 信息时，会先读取这个 RequestHeaderProto，了解当前调用的方法名称，然后进行后续分发。</p>
+<p>RequestHeaderProto 对象随着 Message 对象一起被封装成一个 Call 对象传递给 Client 进行发送，每一个 Call 对象会有一个唯一的 callId， 便于在接收到返回信息中，返回给指定的 Call。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Writable call(RPC.RpcKind rpcKind, Writable rpcRequest,</span><br><span class="line">      ConnectionId remoteId, int serviceClass,</span><br><span class="line">      AtomicBoolean fallbackToSimpleAuth) throws IOException &#123;</span><br><span class="line">  final Connection connection = getConnection(remoteId, call, serviceClass,</span><br><span class="line">  fallbackToSimpleAuth);</span><br><span class="line">  connection.sendRpcRequest(call);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private Connection getConnection(ConnectionId remoteId,</span><br><span class="line">      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)</span><br><span class="line">      throws IOException &#123;</span><br><span class="line">  connection = connections.get(remoteId);</span><br><span class="line">  Connection existing = connections.putIfAbsent(remoteId, connection);</span><br><span class="line">  if (connection == null) &#123;</span><br><span class="line">        connection = new Connection(remoteId, serviceClass);</span><br><span class="line">  &#125;</span><br><span class="line">  connection.setupIOstreams(fallbackToSimpleAuth);</span><br><span class="line">  return connection;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Client 有一个 connections 的 Connection 队列负责同各个节点的NameNode 进行通信，首次构造 Connection 对象后，通过 setupIOstreams初始化链接信息，同时发送相关的设置信息到 Server::processRpcOutOfBandRequest 中进行Server侧的初始化。</p>
+<p>当有一个可用的Connection 后，通过 connection::sendRpcRequest将请求发送给对应的Server。</p>
+<p>同时Connection 也是一个线程类，在 setupIOstreams 的时候会启动接收线程。接收线程在收到消息之后，根据消息中的唯一callId将返回数据返回给指定的 Call 对象，完成整个 Client 的通信流程。</p>
+<h2 id="NameNode-和-DataNode的心跳逻辑"><a href="#NameNode-和-DataNode的心跳逻辑" class="headerlink" title="NameNode 和 DataNode的心跳逻辑"></a>NameNode 和 DataNode的心跳逻辑</h2><p>接下来，以 NameNode 和 DataNode的心跳发送机制为例，举例说明内部通信的流程。</p>
+<p>在 HDFS 中，心跳是单向的，总是由DataNode主动上报当前状态到NameNode中，因此对于心跳而言，NameNode是Server,DataNode是Client。</p>
+<h2 id="DataNode"><a href="#DataNode" class="headerlink" title="DataNode"></a>DataNode</h2><p>在前一篇文章中，我介绍了DataNode 在启动的时候，会构造一个 BlockPoolManager 对象，在 BlockPoolManager 中有一个  BPOfferService的集合对象。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">BPOfferService(List&lt;InetSocketAddress&gt; nnAddrs, List&lt;InetSocketAddress&gt; lifelineNnAddrs, DataNode dn) &#123;</span><br><span class="line">    for (int i = 0; i &lt; nnAddrs.size(); ++i) &#123;</span><br><span class="line">        this.bpServices.add(new BPServiceActor(nnAddrs.get(i),</span><br><span class="line">          lifelineNnAddrs.get(i), this));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void start() &#123;</span><br><span class="line">    for (BPServiceActor actor : bpServices) &#123;</span><br><span class="line">        actor.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>HDFS Federation是为解决HDFS单点故障而提出的NameNode水平扩展方案，该方案允许HDFS创建多个Namespace以提高集群的扩展性和隔离性。<br>在Federation中新增了block-pool的概念，block-pool就是属于单个Namespace的一组block,每个DataNode为所有的block-pool存储block，可以理解block-pool是一个重新将block划分的逻辑概念，同一个DataNode中可以存储属于多个block-pool的多个block。<br>每一个BPOfferService(block-pool/namespace)对应着一个 NameService , 对于 NameService 的每一个 NameNode(代表和NameService关联的active状态或者standby状态的NameNode) 节点，会对应 BPServiceActor 的Runnable类。在启动BPOfferService的时候，其实就是启动每一个BPServiceActor类。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">void start() &#123;</span><br><span class="line">    bpThread = new Thread(this, formatThreadName(&quot;heartbeating&quot;, nnAddr));</span><br><span class="line">    bpThread.start();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Override</span><br><span class="line">public void run() &#123;</span><br><span class="line">    connectToNNAndHandshake();//连接NameNode</span><br><span class="line">    while (shouldRun()) &#123;</span><br><span class="line">        offerService();//提供服务</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private void offerService() throws Exception &#123;</span><br><span class="line">    while (shouldRun()) &#123;</span><br><span class="line">        final long startTime = scheduler.monotonicNow();</span><br><span class="line">         final boolean sendHeartbeat = scheduler.isHeartbeatDue(startTime);</span><br><span class="line">         HeartbeatResponse resp = null;</span><br><span class="line">         if (sendHeartbeat) &#123;</span><br><span class="line">            resp = sendHeartBeat(requestBlockReportLease);</span><br><span class="line">         &#125;</span><br><span class="line">         ....</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>BPServiceActor类本身是一个Runnable的实现类，在线程循环中，先链接到NameNode ，再在 while 循环中不断offerService。</p>
+<p>在offerService中，通过 sendHeartBeat 进行周期性的心跳发送。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">private void connectToNNAndHandshake() throws IOException &#123;</span><br><span class="line">    // get NN proxy</span><br><span class="line">    bpNamenode = dn.connectToNN(nnAddr);</span><br><span class="line"></span><br><span class="line">    // First phase of the handshake with NN - get the namespace</span><br><span class="line">    // info.</span><br><span class="line">    NamespaceInfo nsInfo = retrieveNamespaceInfo();</span><br><span class="line"></span><br><span class="line">    // Verify that this matches the other NN in this HA pair.</span><br><span class="line">    // This also initializes our block pool in the DN if we are</span><br><span class="line">    // the first NN connection for this BP.</span><br><span class="line">    bpos.verifyAndSetNamespaceInfo(this, nsInfo);</span><br><span class="line">    </span><br><span class="line">    // Second phase of the handshake with the NN.</span><br><span class="line">    register(nsInfo);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// All heartbeat messages include following info:</span><br><span class="line">// -- Datanode name</span><br><span class="line">// -- data transfer port</span><br><span class="line">// -- Total capacity</span><br><span class="line">// -- Bytes remaining</span><br><span class="line">HeartbeatResponse sendHeartBeat(boolean requestBlockReportLease)</span><br><span class="line">      throws IOException &#123;</span><br><span class="line">    scheduler.scheduleNextHeartbeat();</span><br><span class="line">    scheduler.updateLastHeartbeatTime(monotonicNow());</span><br><span class="line">    return bpNamenode.sendHeartbeat(bpRegistration,</span><br><span class="line">        reports,</span><br><span class="line">        dn.getFSDataset().getCacheCapacity(),</span><br><span class="line">        dn.getFSDataset().getCacheUsed(),</span><br><span class="line">        dn.getXmitsInProgress(),</span><br><span class="line">        dn.getXceiverCount(),</span><br><span class="line">        numFailedVolumes,</span><br><span class="line">        volumeFailureSummary,</span><br><span class="line">        requestBlockReportLease);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// DatanodeProtocolClientSideTranslatorPB.java</span><br><span class="line">@Override</span><br><span class="line">public HeartbeatResponse sendHeartbeat(DatanodeRegistration registration,</span><br><span class="line">      StorageReport[] reports, long cacheCapacity, long cacheUsed,</span><br><span class="line">      int xmitsInProgress, int xceiverCount, int failedVolumes,</span><br><span class="line">      VolumeFailureSummary volumeFailureSummary,</span><br><span class="line">      boolean requestFullBlockReportLease) throws IOException &#123;</span><br><span class="line">  HeartbeatRequestProto.Builder builder = HeartbeatRequestProto.newBuilder()</span><br><span class="line">        .setRegistration(PBHelper.convert(registration))</span><br><span class="line">        .setXmitsInProgress(xmitsInProgress).setXceiverCount(xceiverCount)</span><br><span class="line">        .setFailedVolumes(failedVolumes)</span><br><span class="line">        .setRequestFullBlockReportLease(requestFullBlockReportLease);</span><br><span class="line">  resp = rpcProxy.sendHeartbeat(NULL_CONTROLLER, builder.build());</span><br><span class="line">  return new HeartbeatResponse(cmds, PBHelper.convert(resp.getHaStatus()),</span><br><span class="line">        rollingUpdateStatus, resp.getFullBlockReportLeaseId());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在connectToNNAndHandshake中，通过ProtobufRpcEngine::getProxy 获得一个bpNamenode 的RPC代理类，调用 bpNamenode.sendHeartbeat时，通过动态代理将消息通过 Client 发送出去。</p>
+<h2 id="NameNode"><a href="#NameNode" class="headerlink" title="NameNode"></a>NameNode</h2><p>DataNode发送了心跳之后，对应的NameNode会接收到一条对应的请求信息。</p>
+<p>通过走读代码，我们找到了同样实现 DatanodeProtocolService 接口的是DatanodeProtocolServerSideTranslatorPB 类。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public HeartbeatResponseProto sendHeartbeat(RpcController controller,</span><br><span class="line">      HeartbeatRequestProto request) throws ServiceException &#123;</span><br><span class="line">  return namesystem.handleHeartbeat(nodeReg, report,</span><br><span class="line">        dnCacheCapacity, dnCacheUsed, xceiverCount, xmitsInProgress,</span><br><span class="line">        failedVolumes, volumeFailureSummary, requestFullBlockReportLease);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在 DatanodeProtocolServerSideTranslatorPB::sendHeartbeat 中通过事件分发将心跳事件交给 FSNamesystem 进行消费，从而完成了 DataNode 和 NameNode 的心跳事件。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/hadoop/" rel="tag">#hadoop</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/30/[源码]Hadoop HDFS总结(2) 启动流程分析/" rel="next" title="[源码]Hadoop HDFS 启动流程分析">
+                <i class="fa fa-chevron-left"></i> [源码]Hadoop HDFS 启动流程分析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/01/[源码]Hadoop HDFS总结(4) 数据读写流程分析/" rel="prev" title="[源码]Hadoop HDFS 数据读写流程分析">
+                [源码]Hadoop HDFS 数据读写流程分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Protobuf简介"><span class="nav-text">Protobuf简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据传输"><span class="nav-text">数据传输</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RPC调用"><span class="nav-text">RPC调用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RPC通信的逻辑实现"><span class="nav-text">RPC通信的逻辑实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Server"><span class="nav-text">Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Listener"><span class="nav-text">Listener</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reader"><span class="nav-text">Reader</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Handler"><span class="nav-text">Handler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Responder"><span class="nav-text">Responder</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Client"><span class="nav-text">Client</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NameNode-和-DataNode的心跳逻辑"><span class="nav-text">NameNode 和 DataNode的心跳逻辑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DataNode"><span class="nav-text">DataNode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NameNode"><span class="nav-text">NameNode</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

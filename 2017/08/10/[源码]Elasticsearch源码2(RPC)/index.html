@@ -1,0 +1,757 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="es," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/mdgg.jpg?v=5.0.1" />
+
+
+
+
+
+
+<meta name="description" content="本文讨论了ES中的远程调用RPC部分的源码实现。">
+<meta name="keywords" content="es">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[源码]Elasticsearch源码2(RPC)">
+<meta property="og:url" content="https://psiitoy.github.io/2017/08/10/[源码]Elasticsearch源码2(RPC)/index.html">
+<meta property="og:site_name" content="隔壁老王的隔壁的老刘">
+<meta property="og:description" content="本文讨论了ES中的远程调用RPC部分的源码实现。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/nettyyoudian.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-get1.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es-get2.png">
+<meta property="og:image" content="https://psiitoy.github.io/img/blog/essourcecode/es5-uml1.png">
+<meta property="og:updated_time" content="2018-01-30T06:58:57.122Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[源码]Elasticsearch源码2(RPC)">
+<meta name="twitter:description" content="本文讨论了ES中的远程调用RPC部分的源码实现。">
+<meta name="twitter:image" content="https://psiitoy.github.io/img/blog/essourcecode/nettyyoudian.png">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: undefined,
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="https://psiitoy.github.io/2017/08/10/[源码]Elasticsearch源码2(RPC)/"/>
+
+  <title> [源码]Elasticsearch源码2(RPC) | 隔壁老王的隔壁的老刘 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?3523bddfbd122a55e434105b7fd38084";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">隔壁老王的隔壁的老刘</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                [源码]Elasticsearch源码2(RPC)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2017-08-10T20:15:06+08:00" content="2017-08-10">
+              2017-08-10
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/源码/" itemprop="url" rel="index">
+                    <span itemprop="name">源码</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <!--noindex-->
+              <span class="post-comments-count">
+                   &nbsp; | &nbsp;
+              	   <a href="/2017/08/10/[源码]Elasticsearch源码2(RPC)/#SOHUCS" itemprop="discussionUrl">
+              	     <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/08/10/[源码]Elasticsearch源码2(RPC)/" itemprop="commentsCount"></span>
+                  </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文讨论了ES中的远程调用<code>RPC</code>部分的源码实现。</p>
+<a id="more"></a>
+<h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><h3 id="1-1-关于ES-RPC"><a href="#1-1-关于ES-RPC" class="headerlink" title="1.1 关于ES RPC"></a>1.1 关于ES RPC</h3><p>ES的分布式通信这块，主要是支持了RPC和REST两种模式（不支持大的package/stream的数据传输）。<br>集群Node之间的通信，数据的传输，java客户端的请求调用(TransportClient)使用的均是RPC(TCP)。</p>
+<h3 id="1-2-关于Netty"><a href="#1-2-关于Netty" class="headerlink" title="1.2 关于Netty"></a>1.2 关于Netty</h3><p>ES是基于netty开发的rpc模块(http同样基于netty)，采用常规的基于<code>注册/回调</code>方式进行事件驱动的<code>reactor/proactor</code>模式(单线程调度，线程池处理)。</p>
+<blockquote>
+<p>题外话，ES作为分布式系统把每个行为都抽象成了Action对象，且采用注册回调的方式进行通信，它的调用基本都是异步的，所有调用全部依赖ES<br>自己实现的线程池。话说这么多异步事件是不是可以直接抽象成Actor呢。（akka，或者quasar的纤程模型替代不知是否可以）。</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/nettyyoudian.png" alt="图 nettyyoudian"></p>
+<h2 id="二、ES-RPC-源码分析"><a href="#二、ES-RPC-源码分析" class="headerlink" title="二、ES RPC 源码分析"></a>二、ES RPC 源码分析</h2><h3 id="2-1-一个简单例子说明过程"><a href="#2-1-一个简单例子说明过程" class="headerlink" title="2.1 一个简单例子说明过程"></a>2.1 一个简单例子说明过程</h3><p>首先上时序图，举最简单的例子引入话题，一次通过es的java Client Api进行Get请求调用(Tcp方式)。</p>
+<blockquote>
+<p>场景1：Client 连接节点A并发送请求，数据在节点B。</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-get1.png" alt="图 es-get1"></p>
+<blockquote>
+<p>场景2：场景1简化版,Client 连接节点A并发送请求，数据就在A直接返回。</p>
+</blockquote>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es-get2.png" alt="图 es-get2"></p>
+<blockquote>
+<p>关于RPC，这里有一篇文章写的很好<a href="http://www.cnblogs.com/LBSer/p/4853234.html" target="_blank" rel="noopener">你应该知道的RPC原理</a></p>
+</blockquote>
+<h3 id="2-2-ES中的RPC，源码部分"><a href="#2-2-ES中的RPC，源码部分" class="headerlink" title="2.2 ES中的RPC，源码部分"></a>2.2 ES中的RPC，源码部分</h3><p>由于是基于Netty，那么我们直接看源码</p>
+<blockquote>
+<p>首先看发送请求</p>
+</blockquote>
+<ul>
+<li><p>TransportService(Es通信过程中存请求上下文，以及RPC方法映射，即request对应action的地方)，<br>的 clientHandlers就是异步回调池(根据requestId拿到回调执行),存放的就是requestId以及对应的<br>TransportResponseHandler，与code1的request是一一对应的。</p>
+</li>
+<li><p>code1,code3 Connection连接是根据node从transport获取的。</p>
+</li>
+<li><p>code2发送请求最终会执行sendRequestInternal()</p>
+</li>
+<li><p>code4 client线程每次通过socket调用一次远程接口前，生成一个唯一的ID，即requestID<br>（requestID必需保证在一个Socket连接里面是唯一的），一般常常使用AtomicLong从0开始累计数字生成唯一ID。</p>
+</li>
+<li><p>code5 构造超时回调。</p>
+</li>
+<li><p>code6 todo</p>
+</li>
+<li><p>code7 把线程上下文和callback封装</p>
+</li>
+<li><p>code8 将处理结果的回调对象callback，存放到全局ConcurrentHashMap里面put(requestID, callback)；</p>
+</li>
+<li><p>code9 放入定时线程池中(类似于ScheduledThreadPool)，到时间会调用handleException(e)回调给该connection超时异常。</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TransportService</span> <span class="keyword">extends</span> <span class="title">AbstractLifecycleComponent</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> &lt;T extends TransportResponse&gt; <span class="function"><span class="keyword">void</span> <span class="title">sendRequest</span><span class="params">(<span class="keyword">final</span> DiscoveryNode node, <span class="keyword">final</span> String action,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                <span class="keyword">final</span> TransportRequest request,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                <span class="keyword">final</span> TransportRequestOptions options,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                TransportResponseHandler&lt;T&gt; handler)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Transport.Connection connection = getConnection(node);<span class="comment">//code1</span></span><br><span class="line">            sendRequest(connection, action, request, options, handler);<span class="comment">//code2</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (NodeNotConnectedException ex) &#123;</span><br><span class="line">            <span class="comment">// the caller might not handle this so we invoke the handler</span></span><br><span class="line">            handler.handleException(ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> Transport.<span class="function">Connection <span class="title">getConnection</span><span class="params">(DiscoveryNode node)</span> </span>&#123;<span class="comment">//code3</span></span><br><span class="line">        <span class="keyword">if</span> (isLocalNode(node)) &#123;</span><br><span class="line">            <span class="keyword">return</span> localNodeConnection;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> transport.getConnection(node);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;   </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> &lt;T extends TransportResponse&gt; <span class="function"><span class="keyword">void</span> <span class="title">sendRequestInternal</span><span class="params">(<span class="keyword">final</span> Transport.Connection connection, <span class="keyword">final</span> String action,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                       <span class="keyword">final</span> TransportRequest request,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                       <span class="keyword">final</span> TransportRequestOptions options,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                                       TransportResponseHandler&lt;T&gt; handler)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (connection == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"can't send request to a null connection"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            DiscoveryNode node = connection.getNode();</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">long</span> requestId = transport.newRequestId();    <span class="comment">//code4</span></span><br><span class="line">            <span class="keyword">final</span> TimeoutHandler timeoutHandler;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">    </span><br><span class="line">                <span class="keyword">if</span> (options.timeout() == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    timeoutHandler = <span class="keyword">null</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    timeoutHandler = <span class="keyword">new</span> TimeoutHandler(requestId); <span class="comment">//code5</span></span><br><span class="line">                &#125;</span><br><span class="line">                Supplier&lt;ThreadContext.StoredContext&gt; storedContextSupplier = threadPool.getThreadContext().newRestorableContext(<span class="keyword">true</span>);  <span class="comment">//code6</span></span><br><span class="line">                TransportResponseHandler&lt;T&gt; responseHandler = <span class="keyword">new</span> ContextRestoreResponseHandler&lt;&gt;(storedContextSupplier, handler);  <span class="comment">//code7</span></span><br><span class="line">                clientHandlers.put(requestId, <span class="keyword">new</span> RequestHolder&lt;&gt;(responseHandler, connection, action, timeoutHandler));    <span class="comment">//code8</span></span><br><span class="line">                <span class="keyword">if</span> (lifecycle.stoppedOrClosed()) &#123;</span><br><span class="line">                    <span class="comment">// if we are not started the exception handling will remove the RequestHolder again and calls the handler to notify</span></span><br><span class="line">                    <span class="comment">// the caller. It will only notify if the toStop code hasn't done the work yet.</span></span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> TransportException(<span class="string">"TransportService is closed stopped can't send request"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (timeoutHandler != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">assert</span> options.timeout() != <span class="keyword">null</span>;</span><br><span class="line">                    timeoutHandler.future = threadPool.schedule(options.timeout(), ThreadPool.Names.GENERIC, timeoutHandler);<span class="comment">//code9</span></span><br><span class="line">                &#125;</span><br><span class="line">                connection.sendRequest(requestId, action, request, options); <span class="comment">// local node optimization happens upstream code10</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (<span class="keyword">final</span> Exception e) &#123;</span><br><span class="line">                <span class="comment">// usually happen either because we failed to connect to the node</span></span><br><span class="line">                <span class="comment">// or because we failed serializing the message</span></span><br><span class="line">                <span class="keyword">final</span> RequestHolder holderToNotify = clientHandlers.remove(requestId);</span><br><span class="line">                <span class="comment">// If holderToNotify == null then handler has already been taken care of.</span></span><br><span class="line">                <span class="keyword">if</span> (holderToNotify != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    holderToNotify.cancelTimeout();</span><br><span class="line">                    <span class="comment">// callback that an exception happened, but on a different thread since we don't</span></span><br><span class="line">                    <span class="comment">// want handlers to worry about stack overflows</span></span><br><span class="line">                    <span class="keyword">final</span> SendRequestTransportException sendRequestException = <span class="keyword">new</span> SendRequestTransportException(node, action, e);</span><br><span class="line">                    threadPool.executor(ThreadPool.Names.GENERIC).execute(<span class="keyword">new</span> AbstractRunnable() &#123;</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onRejection</span><span class="params">(Exception e)</span> </span>&#123;</span><br><span class="line">                            <span class="comment">// if we get rejected during node shutdown we don't wanna bubble it up</span></span><br><span class="line">                            logger.debug(</span><br><span class="line">                                (Supplier&lt;?&gt;) () -&gt; <span class="keyword">new</span> ParameterizedMessage(</span><br><span class="line">                                    <span class="string">"failed to notify response handler on rejection, action: &#123;&#125;"</span>,</span><br><span class="line">                                    holderToNotify.action()),</span><br><span class="line">                                e);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Exception e)</span> </span>&#123;</span><br><span class="line">                            logger.warn(</span><br><span class="line">                                (Supplier&lt;?&gt;) () -&gt; <span class="keyword">new</span> ParameterizedMessage(</span><br><span class="line">                                    <span class="string">"failed to notify response handler on exception, action: &#123;&#125;"</span>,</span><br><span class="line">                                    holderToNotify.action()),</span><br><span class="line">                                e);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="meta">@Override</span></span><br><span class="line">                        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doRun</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                            holderToNotify.handler().handleException(sendRequestException);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    logger.debug(<span class="string">"Exception while sending request, handler likely already notified due to timeout"</span>, e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>TcpTransport是Netty4Transport和Netty3Transport的父类，利用范型抽象出了Channel所有涉及Channel的均由<br>子类去实现，其负责封装所有发送请求的逻辑。</p>
+</li>
+<li><p>NodeChannels存入transport容器中(TcpTransport)，可执行发送逻辑。</p>
+</li>
+<li><p>TcpTransportChannel可执行响应逻辑。</p>
+</li>
+<li><p>发送会根据场景选择channel(recovery,bulk,reg,state,ping分别对应不同的channel[]，个数也不同，其创建的过程<br>涉及到节点发现的过程，另文细说)，响应就是发给对应的channel。最终执行消息传输的都是Transport(TcpTransport)。</p>
+</li>
+<li><p>真正的发送逻辑是sendRequestToChannel()，最终执行code12发送消息。</p>
+</li>
+</ul>
+<p><img src="https://psiitoy.github.io/img/blog/essourcecode/es5-uml1.png" alt="图 es5-uml1"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">TcpTransport</span>&lt;<span class="title">Channel</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractLifecycleComponent</span> <span class="keyword">implements</span> <span class="title">Transport</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> ConcurrentMap&lt;DiscoveryNode, NodeChannels&gt; connectedNodes = newConcurrentMap();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Set&lt;NodeChannels&gt; openConnections = newConcurrentSet();    </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">NodeChannels</span> <span class="keyword">implements</span> <span class="title">Connection</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendRequest</span><span class="params">(<span class="keyword">long</span> requestId, String action, TransportRequest request, TransportRequestOptions options)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> IOException, TransportException </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (closed.get()) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> NodeNotConnectedException(node, <span class="string">"connection already closed"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            Channel channel = channel(options.type());</span><br><span class="line">            sendRequestToChannel(<span class="keyword">this</span>.node, channel, requestId, action, request, options, getVersion(), (<span class="keyword">byte</span>)<span class="number">0</span>);<span class="comment">//code11</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">sendRequestToChannel</span><span class="params">(DiscoveryNode node, <span class="keyword">final</span> Channel targetChannel, <span class="keyword">final</span> <span class="keyword">long</span> requestId, <span class="keyword">final</span> String action,</span></span></span><br><span class="line"><span class="function"><span class="params">                                        <span class="keyword">final</span> TransportRequest request, TransportRequestOptions options, Version channelVersion,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      <span class="keyword">byte</span> status)</span> <span class="keyword">throws</span> IOException,</span></span><br><span class="line"><span class="function">        TransportException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (compress) &#123;</span><br><span class="line">            options = TransportRequestOptions.builder(options).withCompress(<span class="keyword">true</span>).build();</span><br><span class="line">        &#125;</span><br><span class="line">        status = TransportStatus.setRequest(status);</span><br><span class="line">        ReleasableBytesStreamOutput bStream = <span class="keyword">new</span> ReleasableBytesStreamOutput(bigArrays);</span><br><span class="line">        <span class="comment">// we wrap this in a release once since if the onRequestSent callback throws an exception</span></span><br><span class="line">        <span class="comment">// we might release things twice and this should be prevented</span></span><br><span class="line">        <span class="keyword">final</span> Releasable toRelease = Releasables.releaseOnce(() -&gt; Releasables.close(bStream.bytes()));</span><br><span class="line">        <span class="keyword">boolean</span> addedReleaseListener = <span class="keyword">false</span>;</span><br><span class="line">        StreamOutput stream = bStream;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// only compress if asked, and, the request is not bytes, since then only</span></span><br><span class="line">            <span class="comment">// the header part is compressed, and the "body" can't be extracted as compressed</span></span><br><span class="line">            <span class="keyword">if</span> (options.compress() &amp;&amp; canCompress(request)) &#123;</span><br><span class="line">                status = TransportStatus.setCompress(status);</span><br><span class="line">                stream = CompressorFactory.COMPRESSOR.streamOutput(stream);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// we pick the smallest of the 2, to support both backward and forward compatibility</span></span><br><span class="line">            <span class="comment">// note, this is the only place we need to do this, since from here on, we use the serialized version</span></span><br><span class="line">            <span class="comment">// as the version to use also when the node receiving this request will send the response with</span></span><br><span class="line">            Version version = Version.min(getCurrentVersion(), channelVersion);</span><br><span class="line"></span><br><span class="line">            stream.setVersion(version);</span><br><span class="line">            threadPool.getThreadContext().writeTo(stream);</span><br><span class="line">            stream.writeString(action);</span><br><span class="line">            BytesReference message = buildMessage(requestId, status, node.getVersion(), request, stream, bStream);</span><br><span class="line">            <span class="keyword">final</span> TransportRequestOptions finalOptions = options;</span><br><span class="line">            Runnable onRequestSent = () -&gt; &#123; <span class="comment">// this might be called in a different thread</span></span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    toRelease.close();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    transportServiceAdapter.onRequestSent(node, requestId, action, request, finalOptions);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">            addedReleaseListener = internalSendMessage(targetChannel, message, onRequestSent);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            IOUtils.close(stream);</span><br><span class="line">            <span class="keyword">if</span> (!addedReleaseListener) &#123;</span><br><span class="line">                toRelease.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * sends a message view the given channel, using the given callbacks.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> true if the message was successfully sent or false when an error occurred and the error hanlding logic was activated</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">internalSendMessage</span><span class="params">(Channel targetChannel, BytesReference message, Runnable onRequestSent)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">boolean</span> success;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            sendMessage(targetChannel, message, onRequestSent);</span><br><span class="line">            success = <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException ex) &#123;</span><br><span class="line">            <span class="comment">// passing exception handling to deal with this and raise disconnect events and decide the right logging level</span></span><br><span class="line">            onException(targetChannel, ex);</span><br><span class="line">            success = <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> success;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;    </span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Netty4Transport</span> <span class="keyword">extends</span> <span class="title">TcpTransport</span>&lt;<span class="title">Channel</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(Channel channel, BytesReference reference, Runnable sendListener)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> ChannelFuture future = channel.writeAndFlush(Netty4Utils.toByteBuf(reference));<span class="comment">//code12</span></span><br><span class="line">        future.addListener(f -&gt; sendListener.run());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="发送响应"><a href="#发送响应" class="headerlink" title="发送响应"></a>发送响应</h4><ul>
+<li>服务端接收到请求并处理后，将response结果（此结果中包含了前面的requestID）发送给客户端</li>
+</ul>
+<h4 id="接收消息"><a href="#接收消息" class="headerlink" title="接收消息"></a>接收消息</h4><ul>
+<li><p>客户端socket连接上专门监听消息的线程收到消息，分析结果，取到requestID。</p>
+</li>
+<li><p>messageReceived是比较常见的解析数据包的过程，es自己通过XContent实现的序列化协议，所以代码可读性稍差，作者<br>自己通过mssagepack重写了这部分，详见别文。</p>
+</li>
+<li><p>然叫首先交由TransportService.Adapter 从前面的ConcurrentHashMap里面get(requestID)出callback对象，<br>取消超时任务再交由线程池执行回调code13。</p>
+</li>
+<li><p>code13执行的过程其实就是执行发送消息时的幂名内部类(也叫回调)，<br>通常是交由channel去做异步通知(相当于非本地节点还在监听response)，或者是Aqs释放本地阻塞(本地是调用发起方，见<a href="https://psiitoy.github.io/2017/08/09/[源码]Elasticsearch源码1(通信机制之Future">[源码]Elasticsearch源码1(通信机制之Future)</a>/))。</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">TcpTransport</span>&lt;<span class="title">Channel</span>&gt; <span class="keyword">extends</span> <span class="title">AbstractLifecycleComponent</span> <span class="keyword">implements</span> <span class="title">Transport</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * This method handles the message receive part for both request and responses</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">messageReceived</span><span class="params">(BytesReference reference, Channel channel, String profileName,</span></span></span><br><span class="line"><span class="function"><span class="params">                                      InetSocketAddress remoteAddress, <span class="keyword">int</span> messageLengthBytes)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">int</span> totalMessageSize = messageLengthBytes + TcpHeader.MARKER_BYTES_SIZE + TcpHeader.MESSAGE_LENGTH_SIZE;</span><br><span class="line">        transportServiceAdapter.addBytesReceived(totalMessageSize);</span><br><span class="line">        <span class="comment">// we have additional bytes to read, outside of the header</span></span><br><span class="line">        <span class="keyword">boolean</span> hasMessageBytesToRead = (totalMessageSize - TcpHeader.HEADER_SIZE) &gt; <span class="number">0</span>;</span><br><span class="line">        StreamInput streamIn = reference.streamInput();</span><br><span class="line">        <span class="keyword">boolean</span> success = <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">try</span> (ThreadContext.StoredContext tCtx = threadPool.getThreadContext().stashContext()) &#123;</span><br><span class="line">            <span class="keyword">long</span> requestId = streamIn.readLong();</span><br><span class="line">            <span class="keyword">byte</span> status = streamIn.readByte();</span><br><span class="line">            Version version = Version.fromId(streamIn.readInt());</span><br><span class="line">            <span class="keyword">if</span> (TransportStatus.isCompress(status) &amp;&amp; hasMessageBytesToRead &amp;&amp; streamIn.available() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                Compressor compressor;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span> bytesConsumed = TcpHeader.REQUEST_ID_SIZE + TcpHeader.STATUS_SIZE + TcpHeader.VERSION_ID_SIZE;</span><br><span class="line">                    compressor = CompressorFactory.compressor(reference.slice(bytesConsumed, reference.length() - bytesConsumed));</span><br><span class="line">                &#125; <span class="keyword">catch</span> (NotCompressedException ex) &#123;</span><br><span class="line">                    <span class="keyword">int</span> maxToRead = Math.min(reference.length(), <span class="number">10</span>);</span><br><span class="line">                    StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="string">"stream marked as compressed, but no compressor found, first ["</span>).append(maxToRead)</span><br><span class="line">                        .append(<span class="string">"] content bytes out of ["</span>).append(reference.length())</span><br><span class="line">                        .append(<span class="string">"] readable bytes with message size ["</span>).append(messageLengthBytes).append(<span class="string">"] "</span>).append(<span class="string">"] are ["</span>);</span><br><span class="line">                    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxToRead; i++) &#123;</span><br><span class="line">                        sb.append(reference.get(i)).append(<span class="string">","</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                    sb.append(<span class="string">"]"</span>);</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(sb.toString());</span><br><span class="line">                &#125;</span><br><span class="line">                streamIn = compressor.streamInput(streamIn);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (version.onOrAfter(Version.CURRENT.minimumCompatibilityVersion()) == <span class="keyword">false</span> || version.major != Version.CURRENT.major) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Received message from unsupported version: ["</span> + version</span><br><span class="line">                    + <span class="string">"] minimal compatible version is: ["</span> +Version.CURRENT.minimumCompatibilityVersion() + <span class="string">"]"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            streamIn = <span class="keyword">new</span> NamedWriteableAwareStreamInput(streamIn, namedWriteableRegistry);</span><br><span class="line">            streamIn.setVersion(version);</span><br><span class="line">            threadPool.getThreadContext().readHeaders(streamIn);</span><br><span class="line">            <span class="keyword">if</span> (TransportStatus.isRequest(status)) &#123;</span><br><span class="line">                handleRequest(channel, profileName, streamIn, requestId, messageLengthBytes, version, remoteAddress, status);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">final</span> TransportResponseHandler&lt;?&gt; handler;</span><br><span class="line">                <span class="keyword">if</span> (TransportStatus.isHandshake(status)) &#123;</span><br><span class="line">                    handler = pendingHandshakes.remove(requestId);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    TransportResponseHandler theHandler = transportServiceAdapter.onResponseReceived(requestId);</span><br><span class="line">                    <span class="keyword">if</span> (theHandler == <span class="keyword">null</span> &amp;&amp; TransportStatus.isError(status)) &#123;</span><br><span class="line">                        handler = pendingHandshakes.remove(requestId);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        handler = theHandler;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// ignore if its null, the adapter logs it</span></span><br><span class="line">                <span class="keyword">if</span> (handler != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (TransportStatus.isError(status)) &#123;</span><br><span class="line">                        handlerResponseError(streamIn, handler);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        handleResponse(remoteAddress, streamIn, handler);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// Check the entire message has been read</span></span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">int</span> nextByte = streamIn.read();</span><br><span class="line">                    <span class="comment">// calling read() is useful to make sure the message is fully read, even if there is an EOS marker</span></span><br><span class="line">                    <span class="keyword">if</span> (nextByte != -<span class="number">1</span>) &#123;</span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Message not fully read (response) for requestId ["</span> + requestId + <span class="string">"], handler ["</span></span><br><span class="line">                            + handler + <span class="string">"], error ["</span> + TransportStatus.isError(status) + <span class="string">"]; resetting"</span>);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            success = <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (success) &#123;</span><br><span class="line">                IOUtils.close(streamIn);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                IOUtils.closeWhileHandlingException(streamIn);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleResponse</span><span class="params">(InetSocketAddress remoteAddress, <span class="keyword">final</span> StreamInput stream, <span class="keyword">final</span> TransportResponseHandler handler)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> TransportResponse response = handler.newInstance();</span><br><span class="line">        response.remoteAddress(<span class="keyword">new</span> InetSocketTransportAddress(remoteAddress));</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            response.readFrom(stream);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            handleException(handler, <span class="keyword">new</span> TransportSerializationException(</span><br><span class="line">                <span class="string">"Failed to deserialize response of type ["</span> + response.getClass().getName() + <span class="string">"]"</span>, e));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        threadPool.executor(handler.executor()).execute(<span class="keyword">new</span> AbstractRunnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Exception e)</span> </span>&#123;</span><br><span class="line">                handleException(handler, <span class="keyword">new</span> ResponseHandlerFailureTransportException(e));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doRun</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                handler.handleResponse(response);   <span class="comment">//code13</span></span><br><span class="line">            &#125;&#125;);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TransportService</span> <span class="keyword">extends</span> <span class="title">AbstractLifecycleComponent</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="class"><span class="keyword">class</span> <span class="title">Adapter</span> <span class="keyword">implements</span> <span class="title">TransportServiceAdapter</span> </span>&#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> TransportResponseHandler <span class="title">onResponseReceived</span><span class="params">(<span class="keyword">final</span> <span class="keyword">long</span> requestId)</span> </span>&#123;</span><br><span class="line">            RequestHolder holder = clientHandlers.remove(requestId);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (holder == <span class="keyword">null</span>) &#123;</span><br><span class="line">                checkForTimeout(requestId);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            holder.cancelTimeout();</span><br><span class="line">            <span class="keyword">if</span> (traceEnabled() &amp;&amp; shouldTraceAction(holder.action())) &#123;</span><br><span class="line">                traceReceivedResponse(requestId, holder.connection().getNode(), holder.action());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> holder.handler();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/es/" rel="tag">#es</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/09/[源码]Elasticsearch源码1(Future模式)/" rel="next" title="[源码]Elasticsearch源码1(Future模式)">
+                <i class="fa fa-chevron-left"></i> [源码]Elasticsearch源码1(Future模式)
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/11/[源码]Elasticsearch源码3(线程池)/" rel="prev" title="[源码]Elasticsearch源码3(线程池)">
+                [源码]Elasticsearch源码3(线程池) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="SOHUCS" ></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars2.githubusercontent.com/u/20333098?v=3&u=f86b14c3b141f38f563c4c90e87cbaad10f10eaf&s=140"
+               alt="psiitoy、stereo" />
+          <p class="site-author-name" itemprop="name">psiitoy、stereo</p>
+          <p class="site-description motion-element" itemprop="description">多锻炼，多看书</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">44</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">42</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/psiitoy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://17160741.qzone.qq.com" target="_blank" title="QQ">
+                  
+                    <i class="fa fa-fw fa-qq"></i>
+                  
+                  QQ
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、前言"><span class="nav-text">一、前言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-关于ES-RPC"><span class="nav-text">1.1 关于ES RPC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-关于Netty"><span class="nav-text">1.2 关于Netty</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、ES-RPC-源码分析"><span class="nav-text">二、ES RPC 源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-一个简单例子说明过程"><span class="nav-text">2.1 一个简单例子说明过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-ES中的RPC，源码部分"><span class="nav-text">2.2 ES中的RPC，源码部分</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#发送响应"><span class="nav-text">发送响应</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#接收消息"><span class="nav-text">接收消息</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">psiitoy、stereo</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<br/>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1259991182'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1259991182%26online%3D1%26show%3Dline' type='text/javascript'%3E%3C/script%3E"));</script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.0.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+		 <script type="text/javascript">
+		(function(){
+		var appid = 'cyt09HpmK';
+		var conf = '6f1cbab45764c9f07e8f308faa65b883';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {
+		window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); } })(); </script>
+		<script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+	
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
